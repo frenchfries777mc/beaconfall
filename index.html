@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BEACONFALL</title>
+<meta name="theme-color" content="#14527e">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#14527e;color:#fff;font-family:system-ui,'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic','Hiragino Sans',sans-serif;overflow:hidden}
+#bg{position:fixed;inset:0;background:#14527e url(bg.jpg) center/cover no-repeat;animation:drift 90s ease-in-out infinite alternate;transform-origin:50% 50%}
+@keyframes drift{from{transform:scale(1.08) translate(-1.5%,-1%)}to{transform:scale(1.18) translate(1.5%,1%)}}
+#shade{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(6,22,40,.15),rgba(6,22,40,.7))}
+main{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center}
+h1{margin:0;font-size:clamp(40px,9vw,92px);letter-spacing:.12em;font-weight:800;text-shadow:0 4px 0 #0008,0 0 40px #000a}
+.sub{margin:0 0 14px;font-size:clamp(15px,2.4vw,20px);text-shadow:0 2px 6px #000c;max-width:34em}
+.btn{display:block;width:min(300px,80vw);padding:14px 18px;border:2px solid #e9d9a4;border-radius:10px;background:rgba(14,18,30,.72);color:#f4ecd0;font:700 18px/1.2 inherit;text-decoration:none;cursor:pointer;box-shadow:0 3px 0 #000a;backdrop-filter:blur(3px)}
+.btn:hover{background:rgba(233,217,164,.9);color:#10141f}
+.btn.main{border-color:#9ae0ff;font-size:22px;padding:18px}
+.langs{z-index:5;position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:94vw}
+.langs button{padding:6px 10px;border:2px solid #e9d9a488;border-radius:8px;background:rgba(14,18,30,.6);color:#f4ecd0;font:600 13px inherit;cursor:pointer}
+.langs button.on,.langs button:hover{background:rgba(233,217,164,.9);color:#10141f}
+</style>
+</head>
+<body>
+<div id="bg"></div><div id="shade"></div>
+<div class="langs" id="langs"></div>
+<main>
+<h1>BEACONFALL</h1>
+<p class="sub" data-k="sub"></p>
+<a class="btn main" href="BEACONFALL.html" data-k="play"></a>
+<a class="btn" href="BEACONFALL.html" download="BEACONFALL.html" data-k="dl"></a>
+</main>
+<script>
+var L={
+ko:{n:'한국어',sub:'30개의 섬이 떠 있는 바다에서 친구들과 함께 살아남고, 짓고, 탐험하세요.',play:'바로 플레이',dl:'다운로드'},
+en:{n:'English',sub:'Survive, build and explore with friends across a sea of 30 islands.',play:'Play now',dl:'Download'},
+fr:{n:'Français',sub:'Survivez, construisez et explorez avec vos amis sur une mer de 30 îles.',play:'Jouer maintenant',dl:'Télécharger'},
+de:{n:'Deutsch',sub:'Überlebe, baue und erkunde mit Freunden ein Meer aus 30 Inseln.',play:'Jetzt spielen',dl:'Herunterladen'},
+es:{n:'Español',sub:'Sobrevive, construye y explora con tus amigos en un mar de 30 islas.',play:'Jugar ahora',dl:'Descargar'},
+ja:{n:'日本語',sub:'30の島が浮かぶ海で、仲間と生き延び、建て、冒険しよう。',play:'今すぐプレイ',dl:'ダウンロード'}
+};
+var KEY='beaconfallSiteLang';
+function pick(){try{var s=localStorage.getItem(KEY);if(s&&L[s])return s}catch(e){}
+ var a=navigator.languages||[navigator.language||'en'];for(var i=0;i<a.length;i++){var c=String(a[i]).slice(0,2).toLowerCase();if(L[c])return c}return 'en'}
+function set(l,save){document.documentElement.lang=l;
+ document.querySelectorAll('[data-k]').forEach(function(e){e.textContent=L[l][e.dataset.k]});
+ document.querySelectorAll('#langs button').forEach(function(b){b.classList.toggle('on',b.dataset.l===l)});
+ if(save){try{localStorage.setItem(KEY,l)}catch(e){}}}
+var box=document.getElementById('langs');
+Object.keys(L).forEach(function(l){var b=document.createElement('button');b.textContent=L[l].n;b.dataset.l=l;b.onclick=function(){set(l,true)};box.appendChild(b)});
+set(pick());
+</script>
+</body>
+</html>
