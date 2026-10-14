@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BEACONFALL</title>
 <meta name="description" content="">
-<meta property="og:title" content="BEACONFALL"><meta property="og:image" content="img/shot-camp.png"><meta name="theme-color" content="#14527e">
+<meta property="og:title" content="BEACONFALL"><meta property="og:image" content="shot-camp.png"><meta name="theme-color" content="#14527e">
 <style>
-@font-face{font-family:Galmuri;src:url(font/Galmuri11.woff2) format('woff2');font-weight:400;font-display:swap}
-@font-face{font-family:Galmuri;src:url(font/Galmuri11-Bold.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:Galmuri;src:url(Galmuri11.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Galmuri;src:url(Galmuri11-Bold.woff2) format('woff2');font-weight:700;font-display:swap}
 :root{--ink:#0b1626;--cream:#f4ecd0;--gold:#e9d9a4;--sky:#9ae0ff;--btn:rgba(14,18,30,.78)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -96,7 +96,7 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
  <h2 data-i="i_h"></h2>
  <div class="note" data-i="i_note"></div>
  <div class="row" id="biomes"></div>
- <img id="shot" alt="" src="img/shot-camp.png">
+ <img id="shot" alt="" src="shot-camp.png">
 </section>
 <section id="items">
  <h2 data-i="a_h"></h2>
@@ -144,16 +144,16 @@ const tv=(ver,f,ko)=>{const e=I.V[ver];return (e&&e[f]&&(e[f][LANG]||e[f].ko))||
 /* 배경 */
 const SHOTS=['camp','village','ice','volcano','desert','jungle','stone','mangrove','mesa','forest'];
 const bg=document.getElementById('bg');
-SHOTS.forEach((n,i)=>{const im=document.createElement('img');im.src='img/shot-'+n+'.png';im.alt='';if(!i)im.className='on';bg.appendChild(im);});
+SHOTS.forEach((n,i)=>{const im=document.createElement('img');im.src='shot-'+n+'.png';im.alt='';if(!i)im.className='on';bg.appendChild(im);});
 let bi=0;setInterval(()=>{const l=bg.children;l[bi].classList.remove('on');bi=(bi+1)%l.length;l[bi].classList.add('on');},7000);
 /* 섬 */
 const BIO=[['camp','시작섬'],['village','마을섬'],['forest','숲섬'],['desert','사막섬'],['volcano','화산섬'],['jungle','정글섬'],['mesa','메사섬'],['stone','돌섬'],['mangrove','맹그로브섬'],['ice','얼음섬']];
 const biomes=document.getElementById('biomes');
-BIO.forEach(([k,n],i)=>{const b=document.createElement('button');b.className='pb'+(i?'':' on');b.dataset.k=k;b.onclick=()=>{document.getElementById('shot').src='img/shot-'+k+'.png';biomes.querySelectorAll('.pb').forEach(x=>x.classList.toggle('on',x===b));};biomes.appendChild(b);});
+BIO.forEach(([k,n],i)=>{const b=document.createElement('button');b.className='pb'+(i?'':' on');b.dataset.k=k;b.onclick=()=>{document.getElementById('shot').src='shot-'+k+'.png';biomes.querySelectorAll('.pb').forEach(x=>x.classList.toggle('on',x===b));};biomes.appendChild(b);});
 /* 아이템 */
 const ITEMS=[['rune_fire','화염의 룬'],['rune_ice','냉기의 룬'],['pot_heal','회복 물약'],['pot_might','괴력 물약'],['alchemy','연금솥'],['runetable','룬 제단'],['furnace','용광로'],['gold_ingot','금 주괴'],['trap','덫'],['balloon','열기구'],['boat','보트'],['island_map','섬 지도'],['compass','나침반'],['pearl','진주'],['coral','산호'],['stall','가판대'],['mailbox','우체통'],['monument','방명록 비석'],['bread','빵'],['stew','스튜'],['steak','구운 고기']];
 const grid=document.getElementById('itemGrid');
-ITEMS.forEach(([id,n])=>{const b=document.createElement('button');b.className='pb';b.dataset.n=n;b.innerHTML='<img src="img/i/'+id+'.png" alt=""><span></span>';grid.appendChild(b);});
+ITEMS.forEach(([id,n])=>{const b=document.createElement('button');b.className='pb';b.dataset.n=n;b.innerHTML='<img src="i-'+id+'.png" alt=""><span></span>';grid.appendChild(b);});
 function labels(){biomes.querySelectorAll('.pb').forEach((b,i)=>b.textContent=nm(BIO[i][1]));grid.querySelectorAll('.pb').forEach(b=>b.lastChild.textContent=nm(b.dataset.n));}
 /* 버전 */
 function render(d){
