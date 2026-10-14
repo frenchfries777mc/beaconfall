@@ -21,7 +21,7 @@ a{color:inherit}
 #bg{position:fixed;inset:0;z-index:-2;background:var(--ink)}
 #bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.6s}
 #bg img.on{opacity:1}
-#bgshade{position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(6,16,30,.25),rgba(6,16,30,.55) 60%,rgba(6,16,30,.8))}
+#bgshade{position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(6,16,30,.3),rgba(6,16,30,.62) 50%,rgba(6,16,30,.82))}
 /* 픽셀 버튼 (박스 없이 버튼만) */
 .pb{display:inline-block;padding:10px 16px;border:3px solid var(--gold);border-radius:0;background:var(--btn);color:var(--cream);font:700 15px/1.2 inherit;text-decoration:none;cursor:pointer;box-shadow:4px 4px 0 #000b;text-align:center}
 .pb:hover,.pb.on{background:var(--gold);color:#10141f}
@@ -52,6 +52,8 @@ h2::before{content:"■ ";color:var(--gold)}
 .items .pb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;font-size:12px;font-weight:400}
 .items img{width:48px;height:48px}
 /* 버전 · 패치노트 */
+.gl{margin-top:18px;gap:12px}
+.gl li{max-width:42em}
 .vl{display:flex;flex-direction:column;gap:10px}
 .vrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .vrow .pb{font-size:14px;padding:8px 12px}
@@ -74,7 +76,7 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
 <div id="bg"></div><div id="bgshade"></div>
 <div class="top"><div class="wrap">
  <div class="nav">
-  <a class="pb" href="#play" data-i="n_play"></a><a class="pb" href="#islands" data-i="n_isl"></a><a class="pb" href="#items" data-i="n_items"></a><a class="pb" href="#versions" data-i="n_ver"></a><a class="pb" href="#notes" data-i="n_notes"></a><a class="pb" href="#help" data-i="n_help"></a>
+  <a class="pb" href="#play" data-i="n_play"></a><a class="pb" href="#guide" data-i="n_guide"></a><a class="pb" href="#islands" data-i="n_isl"></a><a class="pb" href="#items" data-i="n_items"></a><a class="pb" href="#versions" data-i="n_ver"></a><a class="pb" href="#notes" data-i="n_notes"></a><a class="pb" href="#help" data-i="n_help"></a>
  </div>
  <div class="lg" id="lg"></div>
 </div></div>
@@ -91,6 +93,12 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
 <section>
  <h2 data-i="f_h"></h2>
  <ul class="ft"><li data-i="f1"></li><li data-i="f2"></li><li data-i="f3"></li><li data-i="f4"></li><li data-i="f5"></li><li data-i="f6"></li></ul>
+</section>
+<section id="guide">
+ <h2 data-i="g_h"></h2>
+ <div class="note" data-i="g_note"></div>
+ <div class="row" id="gcats"></div>
+ <ul class="ft gl" id="gtips"></ul>
 </section>
 <section id="islands">
  <h2 data-i="i_h"></h2>
@@ -150,6 +158,11 @@ let bi=0;setInterval(()=>{const l=bg.children;l[bi].classList.remove('on');bi=(b
 const BIO=[['camp','시작섬'],['village','마을섬'],['forest','숲섬'],['desert','사막섬'],['volcano','화산섬'],['jungle','정글섬'],['mesa','메사섬'],['stone','돌섬'],['mangrove','맹그로브섬'],['ice','얼음섬']];
 const biomes=document.getElementById('biomes');
 BIO.forEach(([k,n],i)=>{const b=document.createElement('button');b.className='pb'+(i?'':' on');b.dataset.k=k;b.onclick=()=>{document.getElementById('shot').src='shot-'+k+'.png';biomes.querySelectorAll('.pb').forEach(x=>x.classList.toggle('on',x===b));};biomes.appendChild(b);});
+/* 공략 */
+const gcats=document.getElementById('gcats'),gtips=document.getElementById('gtips');let GI=0;
+I.G.forEach((g,i)=>{const b=document.createElement('button');b.className='pb';b.onclick=()=>{GI=i;guide();};gcats.appendChild(b);});
+function guide(){const g=I.G;gcats.querySelectorAll('.pb').forEach((b,i)=>{b.textContent=g[i].n[LANG]||g[i].n.ko;b.classList.toggle('on',i===GI);});
+ gtips.innerHTML=g[GI].i.map(x=>'<li>'+esc(x[LANG]||x.ko)+'</li>').join('');}
 /* 아이템 */
 const ITEMS=[['rune_fire','화염의 룬'],['rune_ice','냉기의 룬'],['pot_heal','회복 물약'],['pot_might','괴력 물약'],['alchemy','연금솥'],['runetable','룬 제단'],['furnace','용광로'],['gold_ingot','금 주괴'],['trap','덫'],['balloon','열기구'],['boat','보트'],['island_map','섬 지도'],['compass','나침반'],['pearl','진주'],['coral','산호'],['stall','가판대'],['mailbox','우체통'],['monument','방명록 비석'],['bread','빵'],['stew','스튜'],['steak','구운 고기']];
 const grid=document.getElementById('itemGrid');
@@ -188,7 +201,7 @@ function applyLang(){
  document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i);});
  document.title=t('title');const m=document.querySelector('meta[name=description]');if(m)m.content=t('desc');
  lg.querySelectorAll('.pb').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
- labels();render(DATA);renderNotes(NDATA);
+ labels();guide();render(DATA);renderNotes(NDATA);
 }
 applyLang();
 fetch('patchnotes.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(renderNotes).catch(()=>{});

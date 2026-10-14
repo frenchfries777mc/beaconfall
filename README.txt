@@ -5,6 +5,7 @@ BEACONFALL 사이트 (정적 사이트: 서버 프로그램이 필요 없어요)
   index.html            첫 화면 (바로 플레이 / 다운로드 / 섬 둘러보기 / 아이템 / 버전 / 패치노트 / 도움말)
   i18n.js               사이트 번역 6개 언어 (한국어·English·Français·Deutsch·Español·日本語), 브라우저 언어로 자동 선택
   versions.json         버전 목록 (새 버전을 낼 때 맨 위에 한 줄 추가)
+  (공략 글은 i18n.js 의 G 항목에 있어요)
   patchnotes.json       패치노트 (새 패치마다 맨 위에 항목 추가)
   BEACONFALL-v0.1.html  게임 파일
   shot-*.png, i-*.png   게임 화면(도트)과 아이템 아이콘
