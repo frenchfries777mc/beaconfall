@@ -1,3 +1,16 @@
-BEACONFALL 사이트 (정적 사이트)
-index.html 첫 화면 / BEACONFALL.html 게임 / bg.jpg 섬 배경
-GitHub 저장소에 파일 그대로 올리고 Pages를 켜면 돼요.
+BEACONFALL 사이트 (정적 사이트: 서버 프로그램이 필요 없어요)
+=========================================================
+모든 파일을 그대로 GitHub 저장소에 올리고 Pages를 켜면 돼요.
+
+  index.html            첫 화면 (바로 플레이 / 다운로드 / 섬 둘러보기 / 아이템 / 버전 / 패치노트 / 도움말)
+  i18n.js               사이트 번역 6개 언어 (한국어·English·Français·Deutsch·Español·日本語), 브라우저 언어로 자동 선택
+  versions.json         버전 목록 (새 버전을 낼 때 맨 위에 한 줄 추가)
+  patchnotes.json       패치노트 (새 패치마다 맨 위에 항목 추가)
+  BEACONFALL-v0.1.html  게임 파일
+  img/                  게임 화면(도트)과 아이템 아이콘
+  font/                 Galmuri 도트 글꼴 (SIL OFL 1.1, OFL.txt 참고)
+
+[ 새 버전을 낼 때 ]
+  1. 새 게임 파일을 BEACONFALL-v0.2.html 처럼 올리기
+  2. versions.json 맨 위에 새 항목 추가, 이전 최신 항목의 "latest"를 false로, latest 값과 latestFile 바꾸기
+  3. patchnotes.json 맨 위에 패치노트 추가 (번역은 i18n.js 의 N, V 에 "v0.2" 형태로 추가, 없으면 한국어 원문이 보여요)
