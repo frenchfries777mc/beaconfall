@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script src="https://frenchfries777mc.github.io/games/ff-lang.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BEACONFALL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3014,7 +3015,7 @@ function setLang(l,save){
   if(!I18N_LANGS.includes(l))l='ko';
   I18N.lang=l;I18N.li=l==='ko'?-1:I18N_LANGS.indexOf(l)-1;I18N.cache.clear();
   document.documentElement.lang=l;
-  if(save!==false){settings.lang=l;saveSettings();}
+  if(save!==false){settings.lang=l;saveSettings();try{if(window.FFLang)FFLang.set(l);}catch(e){}}   // 허브·사이트·다른 게임 언어도 같이 바꿔요
   i18nWalk(document.body);
   const tt=document.querySelector('title');if(tt)i18nText(tt.firstChild||tt);
 }
@@ -7717,7 +7718,13 @@ function achGrant(id){
   if(settings.ach[id])return;
   settings.ach[id]=Date.now();saveSettings();
   const a=ACH.find(q=>q.id===id);if(a)achQ.push(a);
+  achSync();
   if(ACH.every(q=>q.id==='all'||q.cat==='함께'||settings.ach[q.id]))achGrant('all');
+}
+let achSyncT=0;
+function achSync(){   // 공용 프로필 카드의 도전과제 달성/전체 (로그인했을 때만)
+  clearTimeout(achSyncT);
+  achSyncT=setTimeout(()=>{try{if(window.bfAchPush)window.bfAchPush(ACH.filter(q=>settings.ach[q.id]).length,ACH.length);}catch(e){}},800);
 }
 function achAll(id){achGrant(id);if(isHost())bcastAll({t:'ach',id});}
 function achPopTick(dt){
@@ -9899,8 +9906,9 @@ const gate=$g('authgate'),msg=$g('authmsg'),bl=$g('alogin'),bs=$g('asign'),me=$g
 function profShow(){try{prof.classList.toggle('show',!!(window.bfUid&&window.FFProfile));}catch(e){}}
 prof.onclick=()=>{try{if(window.FFProfile&&sb&&window.bfUid)FFProfile.open(sb,window.bfUid);}catch(e){}};
 let marked=false;
+window.bfAchPush=(done,total)=>{try{if(window.FFProfile&&FFProfile.setAchievements&&sb&&window.bfUid)FFProfile.setAchievements(sb,'beaconfall',done,total);}catch(e){}};
 function markOnce(){try{if(!marked&&window.FFProfile&&sb&&window.bfUid){marked=true;FFProfile.markPlayed(sb,'beaconfall');}}catch(e){}}
-window.addEventListener('load',()=>{profShow();markOnce();});
+window.addEventListener('load',()=>{profShow();markOnce();try{achSync();}catch(e){}});
 let sb=null;try{if(window.supabase)sb=window.supabase.createClient(URL_,KEY);}catch(e){}
 /* 계정 저장: 이 브라우저의 진행을 Frenchfries777 계정(beaconfall_saves)에 올려서 다른 기기에서도 이어 해요 */
 const CS_T='stranded.cloud.t',CS_U='stranded.cloud.uid',CS_TB='beaconfall_saves';
@@ -10086,7 +10094,7 @@ window.bfUser=null;
 const emailFor=u=>u.toLowerCase().replace(/[^a-z0-9_]/g,'')+'@arenaclash.local';
 const say=(t,ok)=>{msg.textContent=t||'';msg.className=ok?'ok':'';};
 const busy=b=>{bl.disabled=bs.disabled=b;};
-function enter(name,uid){window.bfUser=name;window.bfUid=uid||null;csLogin(uid||null);frStart();gate.classList.remove('show');me.textContent=name+' · 로그아웃';me.classList.add('show');profShow();markOnce();try{window.dispatchEvent(new CustomEvent('bf-login',{detail:{name}}));}catch(e){}}
+function enter(name,uid){window.bfUser=name;window.bfUid=uid||null;csLogin(uid||null);frStart();gate.classList.remove('show');me.textContent=name+' · 로그아웃';me.classList.add('show');profShow();markOnce();try{achSync();}catch(e){}try{window.dispatchEvent(new CustomEvent('bf-login',{detail:{name}}));}catch(e){}}
 function errText(e){const m=String(e&&e.message||''),c=String(e&&(e.code||e.error_code)||''),s=e&&e.status||0;
  if(c==='invalid_credentials'||/invalid login/i.test(m))return '아이디 또는 비밀번호가 틀렸어요.';
  if(s===429||/rate limit|too many/i.test(m))return '로그인을 너무 많이 시도했어요. 몇 분 뒤에 다시 해 주세요.';
