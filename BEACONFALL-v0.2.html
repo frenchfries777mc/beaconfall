@@ -7724,7 +7724,7 @@ function achGrant(id){
 let achSyncT=0;
 function achSync(){   // 공용 프로필 카드의 도전과제 달성/전체 (로그인했을 때만)
   clearTimeout(achSyncT);
-  achSyncT=setTimeout(()=>{try{if(window.bfAchPush)window.bfAchPush(ACH.filter(q=>settings.ach[q.id]).length,ACH.length);}catch(e){}},800);
+  achSyncT=setTimeout(()=>{try{if(window.bfAchPush){const ids=ACH.filter(q=>settings.ach[q.id]).map(q=>q.id);window.bfAchPush(ids.length,ACH.length,ids);}}catch(e){}},800);
 }
 function achAll(id){achGrant(id);if(isHost())bcastAll({t:'ach',id});}
 function achPopTick(dt){
@@ -9906,7 +9906,7 @@ const gate=$g('authgate'),msg=$g('authmsg'),bl=$g('alogin'),bs=$g('asign'),me=$g
 function profShow(){try{prof.classList.toggle('show',!!(window.bfUid&&window.FFProfile));}catch(e){}}
 prof.onclick=()=>{try{if(window.FFProfile&&sb&&window.bfUid)FFProfile.open(sb,window.bfUid);}catch(e){}};
 let marked=false;
-window.bfAchPush=(done,total)=>{try{if(window.FFProfile&&FFProfile.setAchievements&&sb&&window.bfUid)FFProfile.setAchievements(sb,'beaconfall',done,total);}catch(e){}};
+window.bfAchPush=(done,total,ids)=>{try{if(window.FFProfile&&FFProfile.setAchievements&&sb&&window.bfUid)FFProfile.setAchievements(sb,'beaconfall',done,total,ids);}catch(e){}};
 function markOnce(){try{if(!marked&&window.FFProfile&&sb&&window.bfUid){marked=true;FFProfile.markPlayed(sb,'beaconfall');}}catch(e){}}
 window.addEventListener('load',()=>{profShow();markOnce();try{achSync();}catch(e){}});
 let sb=null;try{if(window.supabase)sb=window.supabase.createClient(URL_,KEY);}catch(e){}
