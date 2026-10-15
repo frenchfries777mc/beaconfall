@@ -131,6 +131,8 @@ body.playing #shade{ background:radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0
 body.playing #view{ cursor:default; }
 #backbtn{ position:fixed; right:calc(18px + env(safe-area-inset-right,0px)); top:calc(16px + env(safe-area-inset-top,0px)); z-index:6; display:none; }
 body.playing #backbtn{ display:block; }
+#statbtn{ position:fixed; right:calc(18px + env(safe-area-inset-right,0px)); top:calc(16px + 52px + env(safe-area-inset-top,0px)); z-index:6; display:none; }
+body.playing #statbtn{ display:block; }
 :root{ --slot:46px; }
 #inv,#craft{ position:fixed; left:calc(16px + env(safe-area-inset-left,0px)); top:calc(14px + env(safe-area-inset-top,0px)); z-index:6;
   display:none; gap:8px; pointer-events:none; }
@@ -161,7 +163,7 @@ body.crafting .slot{ cursor:pointer; }
 body.playing #netstat{ top:calc(14px + var(--slot) + 18px + env(safe-area-inset-top,0px)); }
 body.crafting #netstat{ top:calc(14px + var(--slot) * 2 + 36px + env(safe-area-inset-top,0px)); }
 @media (max-width:760px){ :root{ --slot:36px; } #inv,#craft{ gap:5px; } .slot canvas,#held canvas{ padding:3px; } #craft .arrow{ width:24px; margin:0 3px; } }
-#clock{ position:fixed; right:calc(18px + env(safe-area-inset-right,0px)); top:calc(16px + 52px + env(safe-area-inset-top,0px)); z-index:6;
+#clock{ position:fixed; right:calc(18px + env(safe-area-inset-right,0px)); top:calc(16px + 104px + env(safe-area-inset-top,0px)); z-index:6;
   padding:6px 10px; font-size:13px; display:none; pointer-events:none; white-space:nowrap; }
 body.playing #clock{ display:block; }
 #craft .clabel{ flex:none; margin-left:6px; font-size:14px; color:var(--gold); text-shadow:2px 2px 0 rgba(6,12,28,.85); white-space:nowrap; }
@@ -226,7 +228,7 @@ body.crafting #recipes{ display:block; }
 .rc.e{ opacity:.5; }
 .rc{ position:relative; }
 .rc.any::after{ content:'*'; position:absolute; right:2px; bottom:-3px; font-size:13px; color:var(--gold); text-shadow:1px 1px 0 #000; }
-body.playing #netstat,body.crafting #netstat{ left:auto; right:calc(18px + env(safe-area-inset-right,0px)); top:calc(104px + env(safe-area-inset-top,0px)); }
+body.playing #netstat,body.crafting #netstat{ left:auto; right:calc(18px + env(safe-area-inset-right,0px)); top:calc(160px + env(safe-area-inset-top,0px)); }
 #chest{ position:fixed; left:calc(16px + env(safe-area-inset-left,0px)); top:calc(14px + env(safe-area-inset-top,0px)); z-index:6;
   display:none; flex-wrap:wrap; gap:8px; width:calc(var(--slot) * 7 + 8px * 6); pointer-events:none; }
 body.chest #chest{ display:flex; pointer-events:auto; }
@@ -347,6 +349,7 @@ html:not(.introDone) #ui,html:not(.introDone) #authgate,html:not(.introDone) #au
 <div id="held"><canvas width="12" height="12"></canvas><span class="cnt"></span><i class="dur"></i></div>
 <div id="seedtag"></div>
 <button id="backbtn" class="btn sm ghost">로비로 (Esc)</button>
+<button id="statbtn" class="btn sm ghost">통계</button>
 <div id="clock" class="pix"></div>
 <div id="hp"></div>
 <div id="hurt"></div>
@@ -7731,7 +7734,7 @@ function achSync(){   // 공용 프로필 카드의 도전과제 달성/전체 (
   achSyncT=setTimeout(()=>{try{if(window.bfAchPush){const ids=ACH.filter(q=>settings.ach[q.id]).map(q=>q.id);window.bfAchPush(ids.length,ACH.length,ids);}}catch(e){}},800);
 }
 function achAll(id){achGrant(id);if(isHost())bcastAll({t:'ach',id});}
-/* ===== 통계 (K 키 · 메뉴 · 업적 창) — 계정 전체 기록이라 모든 세계를 합쳐서 세요 ===== */
+/* ===== 통계 (로비로 버튼 아래 · 메뉴 · 업적 창) — 계정 전체 기록이라 모든 세계를 합쳐서 세요 ===== */
 const ST_ROWS=[
   ['play','플레이 시간','t'],['day','가장 오래 살아남은 날','n'],['walk','걸은 거리 (칸)','d'],['sail','항해한 거리 (칸)','d'],
   ['tree','벤 나무','n'],['rock','캔 바위','n'],['craft','만든 아이템','n'],['place','설치한 블록','n'],
@@ -9270,7 +9273,6 @@ addEventListener('keydown',e=>{
   else if(e.code==='KeyB'){if(!e.repeat)toggleSandbox();e.preventDefault();}
   else if(e.code==='KeyN'){if(!e.repeat)toast('배경음악 '+(BGM.toggle()?'켜짐':'꺼짐'));e.preventDefault();}
   else if(e.code==='KeyJ'){if(!e.repeat)toggleAch();e.preventDefault();}
-  else if(e.code==='KeyK'){if(!e.repeat)openStats();e.preventDefault();}
   else if(e.code==='KeyV'){if(!e.repeat)openJournal();e.preventDefault();}
   else if(e.code==='KeyT'&&!e.repeat&&!crafting){e.preventDefault();chatOpen();}
   else if((e.code==='Equal'||e.code==='NumpadAdd')&&!crafting){zoomStep(1);e.preventDefault();}
@@ -9846,6 +9848,7 @@ document.addEventListener('click',async e=>{
   const t=e.target.closest('button,#modal'); if(!t)return;
   if(t.id==='modal'){if(e.target===t)closeModal();return;}   // 바깥 어두운 곳을 눌렀을 때만 닫아요
   if(t.id==='backbtn'){exitPlay();return;}
+  if(t.id==='statbtn'){if($('#modal').hidden)openStats();else closeModal();return;}
   const d=t.dataset;
   if(d.act){({single:showSingle,multi:()=>showMulti(),stats:()=>openStats(),settings:showSettings})[d.act]();return;}
   if('close' in d){closeModal();return;}
