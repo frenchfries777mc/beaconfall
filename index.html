@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<script src="https://frenchfries777mc.github.io/games/ff-lang.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BEACONFALL</title>
 <meta name="description" content="">
@@ -196,7 +197,7 @@ function renderNotes(d){
 }
 /* 언어 */
 const lg=document.getElementById('lg');
-I.L.forEach(l=>{const b=document.createElement('button');b.className='pb';b.dataset.l=l;b.textContent=NAMES[l];b.onclick=()=>{LANG=l;try{localStorage.setItem(KEY,l);}catch(e){}applyLang();};lg.appendChild(b);});
+I.L.forEach(l=>{const b=document.createElement('button');b.className='pb';b.dataset.l=l;b.textContent=NAMES[l];b.onclick=()=>{LANG=l;try{localStorage.setItem(KEY,l);if(window.FFLang)FFLang.set(l);}catch(e){}applyLang();};lg.appendChild(b);});
 function applyLang(){
  document.documentElement.lang=LANG;
  document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i);});
