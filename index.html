@@ -79,6 +79,7 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
   <a class="pb" href="#play" data-i="n_play"></a><a class="pb" href="#guide" data-i="n_guide"></a><a class="pb" href="#islands" data-i="n_isl"></a><a class="pb" href="#items" data-i="n_items"></a><a class="pb" href="#versions" data-i="n_ver"></a><a class="pb" href="#notes" data-i="n_notes"></a><a class="pb" href="#help" data-i="n_help"></a>
  </div>
  <div class="lg" id="lg"></div>
+ <span data-ff-account></span>
 </div></div>
 <div class="wrap">
 <header class="hero" id="play">
@@ -207,5 +208,6 @@ applyLang();
 fetch('patchnotes.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(renderNotes).catch(()=>{});
 fetch('versions.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(render).catch(()=>{});
 </script>
+<script src="https://frenchfries777mc.github.io/games/ff-auth.js"></script>
 </body>
 </html>

@@ -10088,7 +10088,7 @@ async function sign(){
 bl.onclick=login;bs.onclick=sign;
 gate.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')login();},true);
 gate.addEventListener('keyup',e=>e.stopPropagation(),true);
-me.onclick=async()=>{try{if(csOn&&csDirty)await csPush();}catch(e){}csUid=null;csOn=false;csState='';frStop();try{await sb.auth.signOut();}catch(e){}window.bfUser=null;window.bfUid=null;marked=false;me.classList.remove('show');prof.classList.remove('show');$g('apass').value='';say('');gate.classList.add('show');};
+me.onclick=async()=>{try{if(csOn&&csDirty)await csPush();}catch(e){}csUid=null;csOn=false;csState='';frStop();try{await sb.auth.signOut({scope:'local'});}catch(e){}   // 이 브라우저만 로그아웃 (허브·다른 게임과 같은 로그인 칸을 써요)window.bfUser=null;window.bfUid=null;marked=false;me.classList.remove('show');prof.classList.remove('show');$g('apass').value='';say('');gate.classList.add('show');};
 (async()=>{
  gate.classList.add('show');
  if(!sb){say('서버에 연결하지 못했어요. 인터넷을 확인하고 다시 시도해 주세요.');return;}
