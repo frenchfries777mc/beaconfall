@@ -85,8 +85,8 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
  <h1>BEACONFALL</h1>
  <p data-i="sub"></p>
  <div class="row">
-  <a class="pb big" id="playBtn" href="BEACONFALL-v0.1.html" data-i="b_play"></a>
-  <a class="pb big" id="dlBtn" href="BEACONFALL-v0.1.html" download="BEACONFALL-v0.1.html" data-i="b_dl" style="border-color:var(--gold)"></a>
+  <a class="pb big" id="playBtn" href="BEACONFALL-v0.2.html" data-i="b_play"></a>
+  <a class="pb big" id="dlBtn" href="BEACONFALL-v0.2.html" download="BEACONFALL-v0.2.html" data-i="b_dl" style="border-color:var(--gold)"></a>
  </div>
  <div class="meta" id="heroMeta" data-i="loading"></div>
 </header>
@@ -135,7 +135,7 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
 </div>
 <script src="i18n.js"></script>
 <script>
-const FALLBACK={"latest":"0.1","latestFile":"BEACONFALL-v0.1.html","updated":"2026-10-14","versions":[{"version":"0.1","date":"2026-10-14","file":"BEACONFALL-v0.1.html","title":"첫 공개","summary":"30개의 섬이 떠 있는 바다에서 짓고, 만들고, 탐험하는 협동 생존.","latest":true,"size":0}]};
+const FALLBACK={"latest":"0.2","latestFile":"BEACONFALL-v0.2.html","updated":"2026-10-15","versions":[{"version":"0.2","date":"2026-10-15","file":"BEACONFALL-v0.2.html","title":"인트로·계정 저장·채팅","summary":"인트로, Frenchfries777 계정 저장, 멀티 채팅(T), 확대·축소, 업적 20개 추가","latest":true,"size":0},{"version":"0.1","date":"2026-10-14","file":"BEACONFALL-v0.1.html","title":"첫 공개","summary":"30개의 섬이 떠 있는 바다에서 짓고, 만들고, 탐험하는 협동 생존.","latest":false,"size":0}]};
 const NOTES_FALLBACK={notes:[]};
 const I=window.I18N,esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mb=n=>!n?'':(n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB');
