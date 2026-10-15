@@ -2345,10 +2345,16 @@ function reefTheme(g,c,G,N){
     else if(h>0.95){g.fillStyle='#14161c';g.fillRect(px+5,py+9,6,4);g.fillStyle='#f4f0ff';g.fillRect(px+6,py+10,4,2);}
   }
 }
+function chestFill(list,rnd){   // 상자: 최대 10종류를 랜덤한 칸에 넣어요
+  const it=Array(CH_N).fill(null),ix=[...Array(CH_N).keys()];
+  for(let i=ix.length-1;i>0;i--){const j=(rnd()*(i+1))|0;const t=ix[i];ix[i]=ix[j];ix[j]=t;}
+  list.filter(Boolean).slice(0,10).forEach((q,i)=>{it[ix[i]]=q;});
+  return it;
+}
 function reefLoot(rnd){
   const it=Array(CH_N).fill(null),pool=[['coral',2,5],['pearl',1,2],['crystal',1,2],['gold_ingot',1,3],['pot_breath',1,1],['rubber',1,3],['pearl',1,1]];let n=0;
   for(let i=0,cnt=3+((rnd()*2)|0);i<cnt;i++){const [id,a,b]=pool[(rnd()*pool.length)|0];if(!it.some(q=>q&&q.id===id))it[n++]={id,n:a+((rnd()*(b-a+1))|0)};}
-  it[n]={id:'coin',n:30+((rnd()*40)|0)};return it;
+  it[n]={id:'coin',n:30+((rnd()*40)|0)};return chestFill(it,rnd);
 }
 function drawReefMarks(g,x0,y0,x1,y1){
   if(!DUN||!DUN.reef)return;
@@ -6101,11 +6107,11 @@ function treasureTable(rnd,gx,gy){
     if(!ITEMS[id])continue;
     rows.push({id,n:Math.min(n,maxStack(id)),pr});
   }
-  rows.sort((a,b)=>a.pr-b.pr);   // 칸이 모자라면 흔한 것부터 빠져요
-  const keep=rows.slice(0,CH_N);
+  rows.sort((a,b)=>(b.pr>=1)-(a.pr>=1)||a.pr-b.pr);   // 10종류가 넘으면 꼭 나오는 것은 두고 흔한 것부터 빠져요
+  const keep=rows.slice(0,10);
   keep.sort((a,b)=>b.pr-a.pr);
   keep.forEach((r,i)=>{it[i]={id:r.id,n:r.n};});
-  return it;
+  return chestFill(it,rnd);
 }
 function lootTable(rnd,coins){
   const it=Array(14).fill(null),k=3+((rnd()*3)|0),tot=LOOT.reduce((a,t)=>a+t[0],0);
@@ -6133,7 +6139,7 @@ function pirLoot(rnd){
     if(ITEMS[id]&&!it.some(q=>q&&q.id===id))it[i]={id,n:Math.min(n,maxStack(id))};
   }
   it[7]={id:'coin',n:Math.min(maxStack('coin'),60+((rnd()*90)|0))};
-  return it;
+  return chestFill([it[7],...it.slice(0,7)],rnd);
 }
 function placePirChests(){   // 해적섬 보물 창고 (방장이 한 번만)
   if(isGuest()||world.pirInit===2||!world.pirc||!world.pirc.length)return;
