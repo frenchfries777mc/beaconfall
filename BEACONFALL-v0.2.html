@@ -2345,10 +2345,10 @@ function reefTheme(g,c,G,N){
     else if(h>0.95){g.fillStyle='#14161c';g.fillRect(px+5,py+9,6,4);g.fillStyle='#f4f0ff';g.fillRect(px+6,py+10,4,2);}
   }
 }
-function chestFill(list,rnd){   // 상자: 최대 10종류를 랜덤한 칸에 넣어요
+function chestFill(list,rnd){   // 상자: 최대 12종류를 랜덤한 칸에 넣어요
   const it=Array(CH_N).fill(null),ix=[...Array(CH_N).keys()];
   for(let i=ix.length-1;i>0;i--){const j=(rnd()*(i+1))|0;const t=ix[i];ix[i]=ix[j];ix[j]=t;}
-  list.filter(Boolean).slice(0,10).forEach((q,i)=>{it[ix[i]]=q;});
+  list.filter(Boolean).slice(0,12).forEach((q,i)=>{it[ix[i]]=q;});
   return it;
 }
 function reefLoot(rnd){
@@ -6089,29 +6089,31 @@ const TCHEST=[   // 보상 상자 목록: [아이템, 확률, 최소, 최대]
   ['feller_rgold',0.004,1,1],['miner_rgold',0.004,1,1]
 ];
 const BIO_MON={0:'slime',1:'wolf',2:'scorpion',3:'spirit',4:'spider',5:'snake',6:'golem',7:'croc',8:'yeti'};
-function treasureTable(rnd,gx,gy){
-  const it=Array(CH_N).fill(null);
+function treasureTable(rnd,gx,gy){   // 최대 12종류, 그중 2칸은 확률 50% 이하 아이템
   let bi=0,bd=1e9;
   if(world.islands)world.islands.forEach(o=>{const d=Math.hypot((gx*16-o.cx)/o.rx,(gy*16-o.cy)/o.ry);if(d<bd){bd=d;bi=o.b|0;}});
-  const rows=[];
-  for(const [id0,pr,mn,mx] of TCHEST){
-    if(rnd()>=pr)continue;
+  const mk=([id0,pr,mn,mx])=>{
     let id=id0,n=mn+Math.floor(rnd()*(mx-mn+1));
     if(id0==='*mon'){
       const T=MTYPES[BIO_MON[bi]||'slime'],ds=(T&&T.drop)||[];
-      if(!ds.length)continue;
+      if(!ds.length)return null;
       let e=ds[Math.floor(rnd()*ds.length)];if(e[0]==='*')e=e[1][Math.floor(rnd()*e[1].length)];
       id=e[0];n=2+Math.floor(rnd()*4);
     }
     if(/^ar_.+_1$/.test(id))id=id.slice(0,-1)+(2+Math.floor(rnd()*2));   // 방어구는 ★2~3
-    if(!ITEMS[id])continue;
-    rows.push({id,n:Math.min(n,maxStack(id)),pr});
+    if(!ITEMS[id])return null;
+    return {id,n:Math.min(n,maxStack(id)),pr};
+  };
+  const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=(rnd()*(i+1))|0;const t=a[i];a[i]=a[j];a[j]=t;}return a;};
+  const rows=[];
+  for(const e of TCHEST){if(rnd()>=e[1])continue;const r=mk(e);if(r&&!rows.some(q=>q.id===r.id))rows.push(r);}
+  const rare=shuf(rows.filter(r=>r.pr<=0.5)),pool=TCHEST.filter(e=>e[1]<=0.5),tot=pool.reduce((a,e)=>a+e[1],0);
+  for(let t=0;rare.length<2&&t<50;t++){   // 희귀 아이템이 2개보다 적으면 확률대로 더 뽑아요
+    let r=rnd()*tot,e=pool[0];for(const q of pool){r-=q[1];if(r<=0){e=q;break;}}
+    const x=mk(e);if(x&&!rows.some(q=>q.id===x.id)){rows.push(x);rare.push(x);}
   }
-  rows.sort((a,b)=>(b.pr>=1)-(a.pr>=1)||a.pr-b.pr);   // 10종류가 넘으면 꼭 나오는 것은 두고 흔한 것부터 빠져요
-  const keep=rows.slice(0,10);
-  keep.sort((a,b)=>b.pr-a.pr);
-  keep.forEach((r,i)=>{it[i]={id:r.id,n:r.n};});
-  return chestFill(it,rnd);
+  const first=rare.slice(0,2),keep=[...first,...shuf(rows.filter(r=>!first.includes(r)))].slice(0,12);   // 넘치면 랜덤으로 빠져요
+  return chestFill(keep.map(r=>({id:r.id,n:r.n})),rnd);
 }
 function lootTable(rnd,coins){
   const it=Array(14).fill(null),k=3+((rnd()*3)|0),tot=LOOT.reduce((a,t)=>a+t[0],0);
