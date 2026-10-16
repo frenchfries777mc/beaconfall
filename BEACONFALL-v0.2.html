@@ -4765,6 +4765,7 @@ function adjacentBelt(b){   // 벌목기·채광기 옆(상하좌우 우선, 없
 }
 const beltSpot=c=>[c.gx*CG+4+(Math.random()-0.5)*2,c.gy*CG+4+(Math.random()-0.5)*2];
 let lastFellTT=0;
+const pendBreak=new Map();   // 참가자가 방장에게 보낸 나무 베기 중 답을 기다리는 것
 function breakTreeAuth(k,belt,sap){
   const T=world.trees,x=T.x[k],y=T.y[k],key=y*W+x,ds=[];lastFellTT=T.t[k]|0;
   world.removed[k]=1;
@@ -5207,6 +5208,13 @@ function updatePlayer(dt){
       if(!P.starget){const o=cellOf(P.x,P.y);P.starget=world.rgrid.get(o.gy*GW+o.gx)||world.fgrid.get(o.gy*GW+o.gx)||null;}
     }
     bowTick(dt);
+    if(pendBreak.size){   // 참가자: 방장 답이 없으면 다시 보내요 (최대 3번)
+      for(const [bk,q] of pendBreak){
+        const kk=treeIdAtKey(bk);
+        if(!isGuest()||kk===undefined||world.removed[kk]||q.n>=3){pendBreak.delete(bk);continue;}
+        if(time-q.t>1.2){q.n++;q.t=time;sendHost({t:'break',key:bk});}
+      }
+    }
     const can=P.hold&&$('#modal').hidden&&!crafting&&!P.air&&!P.down&&(!P.sailing||(P.mtarget&&P.mtarget.ty==='gship'))&&!rodMat()&&!bowMat();
     let work=null;
     if(can){
@@ -5242,7 +5250,7 @@ function updatePlayer(dt){
       if(P.chopT>=work.need){
         if(work.kind==='t'){
           const kk=work.key;
-          if(isGuest())sendHost({t:'break',key:world.trees.y[kk]*W+world.trees.x[kk]});else breakTreeAuth(kk);
+          if(isGuest()){const bk=world.trees.y[kk]*W+world.trees.x[kk];sendHost({t:'break',key:bk});pendBreak.set(bk,{t:time,n:0});}else breakTreeAuth(kk);
           stAdd('tree');
           if(bestTool('axe'))wearSel();
         }else if(work.kind==='b'){
@@ -9488,7 +9496,10 @@ function onHostData(c,d){
     if(t&&r&&!(r._ct>now-500)){r._ct=now;const n=r.name||'손님';chatAdd(c.peer,n,t);bcastAll({t:'chat',id:c.peer,n,x:t},c);}
   }else if(d.t==='break'){
     const k=treeIdAtKey(d.key);
-    if(k!==undefined&&!world.removed[k]&&world.trees.t[k]!==4)breakTreeAuth(k);
+    if(k!==undefined&&world.trees.t[k]!==4){
+      if(!world.removed[k])breakTreeAuth(k);
+      else{try{c.send({t:'broke',key:d.key,drops:[]});}catch(e){}}   // 이미 베어진 나무는 참가자 화면만 맞춰 줘요
+    }
   }else if(d.t==='place'&&ITEMS[d.item]&&ITEMS[d.item].place&&Number.isFinite(d.gx)&&Number.isFinite(d.gy)){
     const kind=ITEMS[d.item].place;
     if(canPlaceCell(d.gx|0,d.gy|0,kind,true))addStruct(kind,d.gx|0,d.gy|0,c.peer,d.item,d.dr|0);
