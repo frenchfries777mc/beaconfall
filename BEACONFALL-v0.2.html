@@ -9485,6 +9485,15 @@ function snapshot(){
     disc:world.disc.map(b=>b?'1':'0').join(''),seen:world.seen.map(b=>b?'1':'0').join(''),dby:world.discBy||{},
     drops:drops.map(d=>({id:d.id,item:d.item||'stick',n:d.n||1,sx:d.sx,sy:d.sy,tx:d.tx,ty:d.ty,v:d.v,dur:d.dur}))};
 }
+function sendSnapshot(c){   // PeerJS는 원소가 1만 개쯤 넘는 배열을 한 번에 못 보내서(스택 오류) 큰 목록은 나눠 보내요
+  const s=snapshot(),ex=[];
+  for(const [k,t,n] of [['removed','rem',3000],['brem','brm',3000],['structs','sts',1500],['drops','drp',1500]]){
+    const a=s[k];
+    if(a&&a.length>n){s[k]=a.slice(0,n);for(let i=n;i<a.length;i+=n)ex.push({t,k:a.slice(i,i+n)});}
+  }
+  try{c.send(s);}catch(e){}
+  for(const m of ex){try{c.send(m);}catch(e){}}
+}
 function onHostData(c,d){
   if(!d||typeof d!=='object'||!world)return;
   if(d.t==='pos'&&Number.isFinite(d.x)&&Number.isFinite(d.y)){
@@ -9748,6 +9757,10 @@ async function guestHandle(d){
     }
     monsters=next;
   }else if(d.t==='broke'){applyBroke(d.key,d.drops,false);}
+  else if(d.t==='rem'&&Array.isArray(d.k))markRemoved(d.k);
+  else if(d.t==='brm'&&Array.isArray(d.k))markBrem(d.k);
+  else if(d.t==='sts'&&Array.isArray(d.k)){for(const b of d.k)addStructCell(b.id,b.gx|0,b.gy|0,b);}
+  else if(d.t==='drp'&&Array.isArray(d.k)){for(const o of d.k)drops.push({id:o.id,item:o.item||'stick',n:Math.max(1,o.n|0),sx:o.sx,sy:o.sy,tx:o.tx,ty:o.ty,age:1,v:o.v|0,dur:Number.isFinite(o.dur)?o.dur:undefined});}
   else if(d.t==='ashed'){const b=world.sgrid.get((d.gy|0)*GW+(d.gx|0));if(b&&b.id==='crop')b.gr=+d.gr||0;}
   else if(d.t==='placed'&&STRUCT[normId(d.id)]){
     addStructCell(d.id,d.gx|0,d.gy|0,d.ex);
@@ -9850,7 +9863,8 @@ async function hostRoom(addr,wid){
       c.on('open',()=>{
         if(!world||world.id!==w.id){try{c.close();}catch(e){}return;}
         net.conns.push(c);
-        try{c.send({t:'world',name:w.name,seed:w.seed});c.send(snapshot());}catch(e){}
+        try{c.send({t:'world',name:w.name,seed:w.seed});}catch(e){}
+        sendSnapshot(c);
         bcast();
       });
       c.on('data',d=>onHostData(c,d));
