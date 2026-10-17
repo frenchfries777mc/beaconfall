@@ -344,7 +344,7 @@ html:not(.introDone) #ui,html:not(.introDone) #authgate,html:not(.introDone) #au
     <button class="btn" data-act="multi"><span class="arrow">▶</span>멀티 플레이<span class="en">MULTIPLAYER</span></button>
     <button class="btn" data-act="stats"><span class="arrow">▶</span>통계<span class="en">STATS</span></button>
     <button class="btn" data-act="settings"><span class="arrow">▶</span>설정<span class="en">SETTINGS</span></button>
-    <p class="foot">v0.3<br>build 60</p>
+    <p class="foot">v0.3<br>build 61</p>
   </nav>
 </div>
 
@@ -1135,6 +1135,7 @@ function draw(){
   }
 
   if(!inD)drawWaterFx(g,x0,y0,x1,y1);
+  if(!inD&&!P.air)drawWhales(g,x0,y0,x1,y1);
   if(!inD)drawReefMarks(g,x0,y0,x1,y1);
   for(const b of world.structs)if(b.layer==='f'&&b.x>=x0-10&&b.x<=x1+10&&b.y>=y0-6&&b.y<=y1+20)drawStructSprite(g,b.id,b.gx*GRID,b.gy*GRID,b.mat);
   for(const b of world.structs)if(b.layer==='c'&&b.x>=x0-6&&b.x<=x1+6&&b.y>=y0-2&&b.y<=y1+12)drawBelt8(g,b.gx*CG,b.gy*CG,b.dr|0,b.id==='sorter',b.sr|0,b.fl,beltPaused(b),!!b.lk);
@@ -1180,6 +1181,7 @@ function draw(){
   g.globalAlpha=1;
   drawCamp(g);
   if(mode==='play')drawPlayFx(g);
+  if(!inD)drawVolcFx(g,x0,y0,x1,y1);
   drawSkyReef(g,x0,y0,x1,y1);
 
   // 구름 그림자 + 구름
@@ -1196,7 +1198,7 @@ function draw(){
   const dkn=inD?(dunFloorAt(cam.x+VW/2,cam.y+VH/2)===6?0.52:0.86):mode==='play'?darknessAt(hourNow()):0;
   if(dkn>0.02)drawNight(g,dkn,ix,iy);
   {const wt=mode==='play'&&world.weather&&!inD?world.weather.t:'clear';if(wt!=='clear')drawWeather(g,wt);}
-  if(mode==='play'&&!inD)drawAmbient(g,ix,iy,dkn);
+  if(mode==='play'&&!inD){drawAmbient(g,ix,iy,dkn);drawSkyFx(g,dkn);}
   drawDnums(g,ix,iy);
   if(settings.clouds&&dkn<0.25){
     for(let i=0;i<4;i++){
@@ -2541,7 +2543,122 @@ function drawBalloonEnv(g,x,y){
   const ty=Math.round(y-12+Math.sin(time*2.4)*1)-2;
   for(const s of [-1,1]){for(let k=0;k<=1;k+=0.1){g.fillStyle='#14161c';g.fillRect(Math.round(cx+s*(4+(1.5)*k)),Math.round(cy+16+(ty-(cy+16))*k),1,1);}}
 }
+/* ===== 웅장한 풍경: 바다의 고래 · 화산 분출 · 하늘 위 섬과 고래 · 시간대 연출 ===== */
+let whl=null,whlSeed='';
+function whaleList(){
+  const sd=String(world.seedStr||shown.seed);
+  if(whl&&whlSeed===sd)return whl;
+  whlSeed=sd;const r=mulberry32(hashStr(sd+'whale'));whl=[];
+  for(let i=0;i<5;i++){const a=r()*6.2832,v=3.2+r()*2.4;whl.push({x0:r()*W,y0:r()*H,vx:Math.cos(a)*v,vy:Math.sin(a)*v,ph:r()*30,L:i<2?150:110,a:0});}
+  return whl;
+}
+const wrapP=(v,m)=>((v%m)+m)%m;
+function whaleShape(g,L,col,fl){   // 오른쪽을 보고 있는 큰 고래 모양 (몸통 · 꼬리 · 지느러미)
+  g.fillStyle=col;
+  for(let u=-L/2;u<L/2;u+=2){
+    const t=(u+L/2)/L,w=t<0.12?2+t/0.12*5:(t>0.9?Math.max(1,7*(1-t)/0.1+2):L*0.1*Math.pow(Math.sin(Math.PI*Math.min(0.96,0.1+t*0.88)),0.6));
+    g.fillRect(u,-w,2,w*2);
+  }
+  const sw=Math.sin(time*1.3)*5;
+  g.fillRect(-L/2-5,sw-2,8,3);g.fillRect(-L/2-9,sw-9,5,7);g.fillRect(-L/2-9,sw+2,5,7);
+  g.fillRect(L*0.12,L*0.09,16,3);g.fillRect(L*0.12,-L*0.09-3,16,3);
+  if(fl){g.fillStyle=fl;g.fillRect(L*0.28,-2,L*0.2,3);}
+}
+function drawWhales(g,x0,y0,x1,y1){
+  if(!world||mode!=='play')return;
+  const ws=whaleList(),fr=frameDt||0.016;
+  for(let i=0;i<ws.length;i++){
+    const w=ws[i],x=wrapP(w.x0+w.vx*time,W),y=wrapP(w.y0+w.vy*time,H);
+    const deep=hAt(x,y)<SEA-0.1&&hAt(x+w.vx*10,y+w.vy*10)<SEA-0.1&&hAt(x-w.vx*10,y-w.vy*10)<SEA-0.1;
+    w.a+=((deep?1:0)-w.a)*Math.min(1,fr*1.5);
+    if(w.a<0.03||x<x0-w.L||x>x1+w.L||y<y0-w.L||y>y1+w.L)continue;
+    const cyc=(time+w.ph)%26,up=cyc<4?Math.sin(cyc/4*Math.PI):0,ang=Math.atan2(w.vy,w.vx);
+    g.save();g.translate(Math.round(x),Math.round(y+Math.sin(time*0.7+i)*1.5));g.rotate(ang);
+    g.globalAlpha=w.a*(0.3+up*0.4);
+    whaleShape(g,w.L,up>0.3?'#2a5878':'#06203c',up>0.3?'#cfe8f2':null);
+    g.restore();
+    g.globalAlpha=w.a;
+    if(up>0.2){   // 숨 쉬는 물줄기와 물결
+      const sx=Math.round(x+Math.cos(ang)*w.L*0.3),sy=Math.round(y+Math.sin(ang)*w.L*0.3);
+      for(let k=0;k<3;k++){const rr=6+((cyc*10+k*7)%18);g.strokeStyle='rgba(236,248,252,'+(0.5*up*(1-rr/26)).toFixed(2)+')';g.beginPath();g.arc(sx,sy,rr,0,6.2832);g.stroke();}
+      for(let k=0;k<12;k++){const u=k/12,hh=Math.sin(u*Math.PI)*(12+up*10)*(cyc<3?1:0.5);g.fillStyle='rgba(240,250,255,'+(0.85*up).toFixed(2)+')';g.fillRect(sx+Math.round((k%3-1)*u*5),Math.round(sy-hh-(cyc*6%7)),2,2);}
+    }
+    g.globalAlpha=1;
+  }
+}
+function drawVolcFx(g,x0,y0,x1,y1){
+  if(!world||!world.volc||mode!=='play')return;
+  for(let i=0;i<world.volc.length;i++){
+    const v=world.volc[i];
+    if(v.x<x0-220||v.x>x1+220||v.y<y0-60||v.y>y1+320)continue;
+    const cyc=(time+i*37)%80,near=Math.hypot(P.x-v.x,P.y-v.y)<600;
+    if(cyc>=72&&near)shake(0.7,0.14);              // 분출 직전 땅울림
+    if(cyc>=9&&cyc<72)continue;
+    const ph=cyc>=72?0:cyc/9;                       // 0~1
+    if(cyc>=72){g.fillStyle='rgba(255,110,30,'+(0.05+0.05*Math.sin(time*10)).toFixed(2)+')';fillCircle(g,Math.round(v.x),Math.round(v.y),28);continue;}
+    if(near)shake(1.5*(1-ph*0.5),0.14);
+    const f=1-Math.max(0,ph-0.65)/0.35;           // 끝나갈수록 옅어져요
+    g.fillStyle='rgba(255,100,20,'+(0.2*f).toFixed(2)+')';fillCircle(g,Math.round(v.x),Math.round(v.y),44);
+    for(let k=0;k<14;k++){   // 화산재 기둥
+      const pe=Math.min(1,ph*2.2),kk=k/13,yy=v.y-6-kk*pe*230-pe*30,r=7+kk*26+pe*6,xx=v.x+Math.sin(time*0.8+k*1.3)*(3+kk*14)+kk*pe*18;
+      g.fillStyle='rgba('+(60+((1-kk)*70|0))+','+(52+((1-kk)*34|0))+','+(58+((1-kk)*10|0))+','+(0.85*f*(1-kk*0.5)).toFixed(2)+')';
+      fillCircle(g,Math.round(xx),Math.round(yy),Math.round(r));
+    }
+    for(let j=0;j<22;j++){   // 용암 덩어리
+      const sd=hash2(j*31+i,7),dir=(sd-0.5)*2,sp=40+hash2(j,11)*110,dur=1.6+hash2(j,13)*1.2,s=(cyc-j*0.35)/dur;
+      if(s<0||s>1)continue;
+      const bx=v.x+dir*sp*s,by=v.y-4-Math.sin(s*Math.PI)*(70+hash2(j,17)*90)+s*s*8;
+      g.fillStyle='#ffe27a';g.fillRect(Math.round(bx),Math.round(by),3,3);g.fillStyle='#ff6a1e';g.fillRect(Math.round(bx)-1,Math.round(by)+1,3,3);
+      g.fillStyle='rgba(255,120,30,0.35)';g.fillRect(Math.round(bx-dir*3),Math.round(by+2),2,1);
+    }
+  }
+}
+function skyIslesDraw(g,x0,y0,x1,y1){   // 하늘 위에서 내려다보는 떠다니는 섬
+  const CELL=360,sd=hs(1,1,5)*100|0;
+  for(let cy=Math.floor((y0-90)/CELL);cy<=Math.floor((y1+90)/CELL);cy++)for(let cx=Math.floor((x0-90)/CELL);cx<=Math.floor((x1+90)/CELL);cx++){
+    if(hash2(cx+sd,cy*3+11)>0.55)continue;
+    const w=34+((hash2(cx,cy+41)*40)|0),x=Math.round(cx*CELL+60+hash2(cx+9,cy)*240),y0i=cy*CELL+60+hash2(cx,cy+77)*240;
+    const bob=Math.sin(time*0.8+cx*1.7+cy)*2,y=Math.round(y0i+bob);
+    g.fillStyle='rgba(8,24,56,0.16)';g.fillRect(x-(w>>1)+10,y+64,w-6,5);g.fillRect(x-(w>>1)+16,y+62,w-18,2);   // 땅에 드리운 그림자
+    const hgt=14+(w>>2);
+    for(let j=0;j<hgt;j++){const ww=Math.max(2,Math.round(w*(1-Math.pow(j/hgt,1.35))));g.fillStyle=j<3?'#6c5a46':((j&3)===0?'#4a3c30':'#5a4a3a');g.fillRect(x-(ww>>1),y+3+j,ww,1);}
+    g.fillStyle='#3d6a2e';g.fillRect(x-(w>>1)-1,y,w+2,4);g.fillStyle='#6cae44';g.fillRect(x-(w>>1),y-1,w,3);g.fillStyle='#8fd05a';g.fillRect(x-(w>>1)+2,y-1,w-8,1);
+    if(w>46){g.fillStyle='#2a4a22';g.fillRect(x-4,y-9,7,9);g.fillStyle='#4a8a38';g.fillRect(x-6,y-12,11,6);g.fillStyle='#74b84a';g.fillRect(x-4,y-12,5,2);}
+    else{g.fillStyle='#e8e0c8';g.fillRect(x+3,y-6,2,6);g.fillRect(x+1,y-8,6,2);}
+    if(hash2(cx+5,cy+5)<0.6){   // 폭포
+      const wx=x+(w>>1)-6;
+      for(let j=0;j<44;j++){const sh=((time*40+j*3)%9)<3;g.fillStyle=sh?'rgba(220,244,255,0.8)':'rgba(120,190,235,0.6)';g.fillRect(wx,y+4+j,2,1);}
+      g.fillStyle='rgba(235,248,255,'+(0.35+0.15*Math.sin(time*4+cx)).toFixed(2)+')';fillCircle(g,wx+1,y+50,5);
+    }
+  }
+}
+function skyWhaleDraw(g,x0,y0,x1,y1){   // 구름 위를 천천히 헤엄치는 하늘 고래
+  const ws=whaleList();
+  for(let i=0;i<2;i++){
+    const w=ws[i],x=wrapP(w.x0+w.vx*time*1.3,W),y=wrapP(w.y0+w.vy*time*1.3,H);
+    if(x<x0-200||x>x1+200||y<y0-200||y>y1+200)continue;
+    const ang=Math.atan2(w.vy,w.vx);
+    g.save();g.translate(Math.round(x),Math.round(y+Math.sin(time*0.6+i)*3));g.rotate(ang);
+    g.globalAlpha=0.28;whaleShape(g,w.L+20,'#102a58',null);g.restore();
+    g.save();g.translate(Math.round(x),Math.round(y-46+Math.sin(time*0.6+i)*3));g.rotate(ang);
+    g.globalAlpha=0.95;whaleShape(g,w.L+20,'#9fc4e8','#e8f4ff');g.restore();
+    g.globalAlpha=1;
+  }
+}
+function skyBirdsDraw(g,x0,y0,x1,y1){
+  g.fillStyle='#f4f8ff';
+  for(let f=0;f<3;f++){
+    const bx=wrapP(f*1700+time*(14+f*3),W+400)-200,by=wrapP(f*1100+300+Math.sin(time*0.2+f)*60,H);
+    for(let k=0;k<7;k++){
+      const px=Math.round(bx-k*9),py=Math.round(by+(k%2?6:-6)*(k>>1)*0.5),up=((time*4+k)|0)&1;
+      if(px<x0-10||px>x1+10||py<y0-10||py>y1+10)continue;
+      if(up){g.fillRect(px-2,py,1,1);g.fillRect(px-1,py-1,1,1);g.fillRect(px,py,1,1);g.fillRect(px+1,py-1,1,1);g.fillRect(px+2,py,1,1);}
+      else{g.fillRect(px-2,py-1,1,1);g.fillRect(px-1,py,1,1);g.fillRect(px,py-1,1,1);g.fillRect(px+1,py,1,1);g.fillRect(px+2,py-1,1,1);}
+    }
+  }
+}
 function drawSkyReef(g,x0,y0,x1,y1){
+  if(P.air&&mode==='play'){skyIslesDraw(g,x0,y0,x1,y1);skyWhaleDraw(g,x0,y0,x1,y1);}
   if(P.air){
     for(const c of skyClouds()){
       if(c.x<x0-40||c.x>x1+40||c.y<y0-40||c.y>y1+40)continue;
@@ -2554,7 +2671,10 @@ function drawSkyReef(g,x0,y0,x1,y1){
       g.globalAlpha=1;
     }
   }
-  if(P.air&&mode==='play')drawBalloonEnv(g,P.x,P.y);
+  if(P.air&&mode==='play'){
+    if(settings.clouds){g.globalAlpha=0.42;for(const c of clouds){const x=((c.x0+time*c.v*1.6)%(W+400))-200,y=c.y-30;const sw=c.sp.w*2,sh=c.sp.h*2;if(x+sw<x0||x>x1||y+sh<y0||y>y1)continue;g.drawImage(c.sp.c,Math.round(x),Math.round(y),sw,sh);}g.globalAlpha=1;}
+    skyBirdsDraw(g,x0,y0,x1,y1);drawBalloonEnv(g,P.x,P.y);
+  }
   for(const r of remotes.values())if(r.air&&!r.dead)drawBalloonEnv(g,r.x,r.y);
 }
 /* ----- 유령선 ----- */
@@ -7606,6 +7726,8 @@ const LM_MINI_BIG=[   // 섬 곳곳의 중형 구조물: 벽·기둥·석상 안
   ["P.P.P.P.P",".........","P..WWW..P","...WCW...","P..W.W..P",".........","P.P...P.P"]            // 기둥 정원 속 금고
 ];
 const LM_MINI=[0,1,2,3,4,5,6,7,8].map(b=>[LM_MINI_BIG[b%4],LM_MINI_BIG[(b+1)%4],LM_MINI_BIG[(b+2)%4]]);
+const LM_FOSSIL=["............","...q.q.q.q..",".zuuuuuuuuuu","...q.q.q.q..","............"];   // 거대한 고래 뼈 화석
+LM_MINI[2].push(LM_FOSSIL,LM_FOSSIL);LM_MINI[5].push(LM_FOSSIL);
 function drawRuin(g,b){
   const cx=b.gx*GRID,cy=b.gy*GRID,bs=b.bs|0,pl=RUIN_PAL[bs]||RUIN_PAL[6],k=b.k;
   g.fillStyle='rgba(8,24,12,0.3)';g.fillRect(cx+1,cy+14,15,2);
@@ -7764,6 +7886,18 @@ function drawRuin(g,b){
     const t=(typeof time==='number'?time:0)*2+b.gx*0.7+b.gy*0.4,w=Math.sin(t)>0;
     g.fillStyle='#8a1e0a';g.fillRect(cx,cy,16,16);g.fillStyle='#ff5a1e';g.fillRect(cx+1,cy+1,14,14);
     g.fillStyle='#ffb23a';g.fillRect(cx+(w?3:6),cy+4,5,3);g.fillRect(cx+(w?9:4),cy+10,4,3);g.fillStyle='#fff0a0';g.fillRect(cx+(w?5:8),cy+5,2,1);
+  }else if(k==='rib'||k==='spine'||k==='skull'){
+    const bn='#ece4cc',bs2='#bdb08c',bd='#6b5f45';
+    if(k==='rib'){
+      for(let j=0;j<22;j++){const xo=Math.round(Math.sin(j/21*Math.PI)*3),yy=cy+15-j;g.fillStyle=bd;g.fillRect(cx+5+xo,yy,5,1);g.fillStyle=bn;g.fillRect(cx+6+xo,yy,3,1);g.fillStyle=bs2;g.fillRect(cx+8+xo,yy,1,1);}
+      g.fillStyle=bd;g.fillRect(cx+4,cy+14,7,2);g.fillStyle=bn;g.fillRect(cx+5,cy+14,5,1);
+    }else if(k==='spine'){
+      g.fillStyle=bd;g.fillRect(cx+1,cy+6,14,6);g.fillStyle=bn;g.fillRect(cx+2,cy+7,5,4);g.fillRect(cx+9,cy+7,5,4);g.fillStyle=bs2;g.fillRect(cx+2,cy+10,5,1);g.fillRect(cx+9,cy+10,5,1);g.fillStyle=bd;g.fillRect(cx+7,cy+8,2,2);
+    }else{
+      g.fillStyle=bd;g.fillRect(cx-8,cy-1,26,16);g.fillStyle=bn;g.fillRect(cx-7,cy,24,13);g.fillStyle=bs2;g.fillRect(cx-7,cy+10,24,3);
+      g.fillStyle=bd;g.fillRect(cx-2,cy+3,5,5);g.fillRect(cx+8,cy+3,5,5);g.fillStyle='#14100a';g.fillRect(cx-1,cy+4,3,3);g.fillRect(cx+9,cy+4,3,3);
+      g.fillStyle=bd;for(let q=0;q<5;q++)g.fillRect(cx+13+q*1,cy+11,1,3);g.fillRect(cx-6,cy+11,1,3);
+    }
   }else{   // altar
     g.fillStyle=pl.d;g.fillRect(cx+2,cy+8,12,7);g.fillStyle=pl.m;g.fillRect(cx+3,cy+10,10,5);g.fillStyle=pl.l;g.fillRect(cx+2,cy+8,12,2);g.fillStyle=pl.a;g.fillRect(cx+7,cy+11,2,2);
   }
@@ -7824,7 +7958,7 @@ function lmPlace(lay,ox,oy,bs){
     if(ch==='C'){if(lmcN++<1)(world.lmc=world.lmc||[]).push([gx,gy]);continue;}   // 구조물당 상자 1개
     if(ch==='D'){if(x===15&&y===7)(world.pirc=world.pirc||[]).push([gx,gy]);continue;}
     if(ch>='1'&&ch<='6'){(world.vnpcRaw=world.vnpcRaw||[]).push({n:+ch-1,gx,gy});continue;}
-    const kind={P:'pillar',W:'wall',S:'statue',B:'brazier',V:'vrock',L:'lava',H:'house',T:'stall',Y:'palis',X:'tent',K:'flag',Q:'lamp',F:'flowers',R:'laundry',O:'well',N:'cave',J:'chapel',j:'inn',U:'barn',M:'field',E:'fence',G:'hay',I:'mill',a:'cow',b:'chick'}[ch];if(!kind)continue;
+    const kind={P:'pillar',W:'wall',S:'statue',B:'brazier',V:'vrock',L:'lava',H:'house',T:'stall',Y:'palis',X:'tent',K:'flag',Q:'lamp',F:'flowers',R:'laundry',O:'well',N:'cave',J:'chapel',j:'inn',U:'barn',M:'field',E:'fence',G:'hay',I:'mill',a:'cow',b:'chick',q:'rib',u:'spine',z:'skull'}[ch];if(!kind)continue;
     const b=addStructCell('ruin',gx,gy,null);if(b){b.lm=1;b.k=kind;b.bs=bs;}
   }});
   return altar;
@@ -7931,7 +8065,7 @@ function buildPirate(){
   }
 }
 function buildLandmarks0(){
-  world.lm=[];world.lmc=[];world.vnpcs=[];world.vill=-1;world.village=null;world.tmDay=0;world.tm=null;world.vfolk=null;VOLC_B.clear();DUN=null;
+  world.volc=[];world.lm=[];world.lmc=[];world.vnpcs=[];world.vill=-1;world.village=null;world.tmDay=0;world.tm=null;world.vfolk=null;VOLC_B.clear();DUN=null;
   for(const o of world.islands)delete o.vname;
   buildVillage();buildPirate();
   const rnd=mulberry32(hashStr((world.seedStr||shown.seed)+'lm'));
@@ -7941,7 +8075,7 @@ function buildLandmarks0(){
     if(o.b===3&&i>0){   // 화산섬: 한가운데에 진짜 화산 (분화구에 용암)
       const vl=[];for(let y=0;y<13;y++){let row='';for(let x=0;x<19;x++){const d=((x-9)/9.5)**2+((y-6)/6.5)**2;row+=d<=0.13?'L':d<=1?'V':'.';}vl.push(row);}
       const vs=lmFind([(o.cx/GRID)|0,(o.cy/GRID)|0],19,13,80,null);
-      if(vs){lmClear(vs.ox,vs.oy,19,13);lmPlace(vl,vs.ox,vs.oy,o.b);}
+      if(vs){lmClear(vs.ox,vs.oy,19,13);lmPlace(vl,vs.ox,vs.oy,o.b);world.volc.push({x:(vs.ox+9.5)*GRID,y:(vs.oy+6.5)*GRID});}
     }
     let lay=lmFlip(lmBig(LM_LAYOUTS[o.b]||LM_LAYOUTS[6]),fx,fy),lw=lay[0].length,lh=lay.length;
     let ref=[(o.cx/GRID)|0,(o.cy/GRID)|0];
@@ -9598,7 +9732,7 @@ function drawWaterFx(g,x0,y0,x1,y1){
     }
   }
 }
-const CAST_H={cave:16,pillar:20,wall:8,statue:14,brazier:5,vrock:8,house:18,stall:9,tent:9,flag:24,palis:10,lamp:22,flowers:3,laundry:12,well:10,altar:6,chapel:22,inn:18,barn:20,fence:5,hay:7,mill:28,cow:8};
+const CAST_H={rib:12,spine:3,skull:9,cave:16,pillar:20,wall:8,statue:14,brazier:5,vrock:8,house:18,stall:9,tent:9,flag:24,palis:10,lamp:22,flowers:3,laundry:12,well:10,altar:6,chapel:22,inn:18,barn:20,fence:5,hay:7,mill:28,cow:8};
 function drawCastShadows(g,tvis,list){
   if(!world||(DUN&&dunFloorAt(P.x,P.y)))return;
   const h=hourNow(),f=Math.min(1,(h-6)/1.3,(18.3-h)/1.3);if(!(f>0))return;
@@ -9658,6 +9792,53 @@ function ambSpawn(kind,VWd,VHd){
     case'bubble':ambP.push({k:kind,x:r()*VWd,y:VHd*0.5+r()*VHd*0.5,vx:0,vy:-5-r()*5,l:4,c:'#8fe0a0',p:r()*6});break;
   }
 }
+let ssStar=null,ssT=6,boltPts=null;
+function drawSkyFx(g,dkn){
+  const h=hourNow(),Wd=VW,Hd=VH,fr=frameDt||0.016,wet=wetNow();
+  const bell=(c,w)=>Math.max(0,1-Math.abs(h-c)/w);
+  // 새벽 안개
+  const mist=bell(5.8,1.9);
+  if(mist>0&&!wet){
+    for(let i=0;i<7;i++){const x=((time*(3+i)+i*173)%(Wd+300))-150,y=Hd*(0.3+i*0.1)+Math.sin(time*0.25+i)*10;
+      g.fillStyle=`rgba(255,236,214,${(mist*0.07).toFixed(3)})`;fillCircle(g,x|0,y|0,44+i*5);fillCircle(g,(x+55)|0,(y+6)|0,30+i*4);}
+  }
+  // 노을: 하늘이 붉게 물들고 해가 낮게 걸려요
+  const sun=bell(18.4,1.5);
+  if(sun>0&&!wet){
+    const gr=g.createLinearGradient(0,0,0,Hd*0.55);gr.addColorStop(0,`rgba(255,110,50,${(sun*0.2).toFixed(3)})`);gr.addColorStop(1,'rgba(255,110,50,0)');
+    g.fillStyle=gr;g.fillRect(0,0,Wd,Hd);
+    const rg=g.createRadialGradient(Wd*0.88,-10,4,Wd*0.88,-10,Hd*0.8);rg.addColorStop(0,`rgba(255,226,140,${(sun*0.45).toFixed(3)})`);rg.addColorStop(0.35,`rgba(255,150,70,${(sun*0.18).toFixed(3)})`);rg.addColorStop(1,'rgba(255,120,60,0)');
+    g.fillStyle=rg;g.fillRect(0,0,Wd,Hd);
+  }
+  // 한낮 빛줄기
+  const day=bell(12,3.2);
+  if(day>0&&!wet&&dkn<0.1){
+    for(let i=0;i<4;i++){
+      const x=((time*3+i*131)%(Wd+120))-60,wd=14+i*5;
+      g.fillStyle=`rgba(255,250,215,${(day*0.04).toFixed(3)})`;
+      g.beginPath();g.moveTo(x,0);g.lineTo(x+wd,0);g.lineTo(x+wd-Hd*0.45,Hd);g.lineTo(x-Hd*0.45,Hd);g.closePath();g.fill();
+    }
+  }
+  // 별똥별
+  if(dkn>0.55&&!wet){
+    ssT-=fr;
+    if(ssT<=0&&!ssStar){ssT=7+Math.random()*12;ssStar={x:Wd*(0.3+Math.random()*0.7),y:Hd*Math.random()*0.35,vx:-(120+Math.random()*80),vy:60+Math.random()*50,l:0};}
+    if(ssStar){
+      const s=ssStar;s.l+=fr;s.x+=s.vx*fr;s.y+=s.vy*fr;
+      const a=Math.max(0,1-s.l/1.1);
+      for(let k=0;k<14;k++){g.fillStyle=`rgba(255,255,240,${(a*(1-k/14)).toFixed(2)})`;g.fillRect(Math.round(s.x-s.vx*k*0.012),Math.round(s.y-s.vy*k*0.012),1,1);}
+      if(s.l>1.1)ssStar=null;
+    }
+  }
+  // 폭풍: 번개 줄기
+  if(wet&&world.weather&&world.weather.t==='storm'){
+    if(flash>0.92&&!boltPts){boltPts=[];let bx=Wd*(0.15+Math.random()*0.7),by=0;while(by<Hd*(0.45+Math.random()*0.4)){boltPts.push([bx,by]);bx+=(Math.random()-0.5)*18;by+=8+Math.random()*10;}shake(1.4,0.25);}
+    if(boltPts&&flash>0.15){
+      g.fillStyle=`rgba(255,255,255,${Math.min(1,flash*1.4).toFixed(2)})`;
+      for(let i=1;i<boltPts.length;i++){const a=boltPts[i-1],b=boltPts[i];g.fillRect(Math.round(a[0]),Math.round(a[1]),2,Math.max(2,Math.round(b[1]-a[1])));g.fillRect(Math.round(Math.min(a[0],b[0])),Math.round(b[1])-1,Math.round(Math.abs(b[0]-a[0]))+2,2);}
+    }else if(flash<=0.15)boltPts=null;
+  }
+}
 function drawAmbient(g,ix,iy,dkn){
   const h=hourNow(),Wd=VW,Hd=VH,fr=frameDt||0.016;
   // 1) 시간대 색감
@@ -9712,7 +9893,7 @@ function drawAmbient(g,ix,iy,dkn){
     for(let i=0;i<5;i++){const x=((time*(5+i*2)+i*191)%(Wd+240))-120,y=Hd*(0.15+i*0.18)+Math.sin(time*0.3+i)*12;fillCircle(g,x|0,y|0,38+i*6);fillCircle(g,(x+40)|0,(y+8)|0,26+i*4);}
   }
   // 얼음섬 오로라 (밤)
-  if(b===8&&dkn>0.25){
+  if((b===8||(se===3&&b!==2&&b!==3))&&dkn>0.25&&!wet){
     const a0=Math.min(1,(dkn-0.25)/0.3);
     for(let x=0;x<Wd;x+=2){
       const wv=Math.sin(x*0.03+time*0.6)+Math.sin(x*0.011-time*0.35)*0.8,top=Hd*0.04+wv*8,len=Hd*0.22+Math.sin(x*0.02+time*0.5)*14;
