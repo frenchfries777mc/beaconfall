@@ -50,6 +50,12 @@ input.q{width:100%;padding:10px 12px;border:3px solid var(--gold);background:var
 .wh{font-size:11px;padding:2px 6px;border:1px solid var(--sky);color:var(--sky);white-space:nowrap}
 .wh.bk{border-color:#ffb0d0;color:#ffb0d0}
 .rn{flex-basis:100%;font-size:12px;color:#d9cfb0;margin-top:-2px}
+.isl{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.isl .card{padding:0 0 8px;overflow:hidden}
+.isl .card img{width:100%;height:84px;object-fit:cover;image-rendering:pixelated}
+.ishot{width:100%;max-height:200px;object-fit:cover;image-rendering:pixelated;border:2px solid #e9d9a444;margin:0 0 6px}
+.ln{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;margin:0 0 4px}
+.ln span b{color:var(--gold)}
 /* 계산기 */
 .cbar{display:flex;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
 .cbar img{width:40px;height:40px;background:#e9d9a41a;border:2px solid #e9d9a444}
@@ -93,6 +99,7 @@ footer{padding:40px 0 30px;color:var(--gold);font-size:12px;text-shadow:2px 2px 
  <div class="row tabs" id="tabs">
   <button class="pb" data-tab="items" data-t="t_items"></button>
   <button class="pb" data-tab="recipes" data-t="t_recipes"></button>
+  <button class="pb" data-tab="isl" data-t="t_isl"></button>
   <button class="pb" data-tab="calc" data-t="t_calc"></button>
   <button class="pb" data-tab="guide" data-t="t_guide"></button>
  </div>
@@ -105,6 +112,9 @@ footer{padding:40px 0 30px;color:var(--gold);font-size:12px;text-shadow:2px 2px 
  <div id="v_recipes" hidden>
   <input class="q" id="qr" autocomplete="off">
   <div id="rlist"></div>
+ </div>
+ <div id="v_isl" hidden>
+  <div class="grid isl" id="igr"></div>
  </div>
  <div id="v_calc" hidden>
   <input class="q" id="qc" autocomplete="off">
@@ -138,6 +148,23 @@ const T={
  c_times:['{n}번 제작','Craft {n}×','Fabriquer {n} fois','{n}× herstellen','Fabricar {n} veces','{n}回作る'],
  c_note:['채집하거나 상점·몬스터·상자에서 얻는 재료까지 풀어서 계산해요. 여러 레시피가 있으면 첫 번째 레시피로 계산해요.','Counted down to items you gather or get from shops, monsters and chests. If there are several recipes, the first one is used.','Calculé jusqu\'aux objets récoltés ou obtenus en boutique, sur les monstres et dans les coffres. La première recette est utilisée s\'il y en a plusieurs.','Gerechnet bis zu Dingen, die man sammelt oder in Läden, von Monstern und aus Truhen bekommt. Bei mehreren Rezepten gilt das erste.','Se calcula hasta lo que se recolecta o se consigue en tiendas, monstruos y cofres. Con varias recetas se usa la primera.','採集、またはお店・モンスター・宝箱で手に入る材料まで分解して計算します。レシピが複数ある場合は最初のものを使います。'],
  c_pick:['위에서 아이템을 골라 보세요','Pick an item above','Choisis un objet ci-dessus','Wähle oben einen Gegenstand','Elige un objeto arriba','上でアイテムを選んでください'],
+ t_isl:['섬','Islands','Îles','Inseln','Islas','島'],
+ i_trees:['나무','Trees','Arbres','Bäume','Árboles','木'],
+ i_ore:['바위·광석','Rocks & ore','Rochers et minerais','Felsen & Erz','Rocas y mena','岩・鉱石'],
+ i_mon:['몬스터','Monsters','Monstres','Monster','Monstruos','モンスター'],
+ i_boss:['보스','Boss','Boss','Boss','Jefe','ボス'],
+ i_drop:['드롭: {s}','Drops: {s}','Butin : {s}','Beute: {s}','Botín: {s}','ドロップ: {s}'],
+ i_dens:['바위가 {s}','Rocks are {s}','Rochers : {s}','Felsen: {s}','Rocas: {s}','岩は{s}'],
+ i_d1:['드물어요','rare','rares','selten','escasas','少ない'],
+ i_d2:['보통이에요','average','moyens','durchschnittlich','normales','普通'],
+ i_d3:['많아요','plentiful','nombreux','zahlreich','abundantes','多い'],
+ i_orep:['바위 중 {s}','Of all rocks: {s}','Parmi les rochers : {s}','Von allen Felsen: {s}','De todas las rocas: {s}','岩のうち {s}'],
+ i_clay:['바위를 캐면 점토가 나올 때가 많아요 (70%)','Mining rocks often gives clay (70%)','Les rochers donnent souvent de l\'argile (70 %)','Beim Abbau gibt es oft Ton (70 %)','Las rocas suelen dar arcilla (70 %)','岩を掘ると粘土が出やすい (70%)'],
+ i_cry:['바위를 캐면 수정이 나올 때가 있어요 (35%)','Mining rocks sometimes gives crystal (35%)','Les rochers donnent parfois du cristal (35 %)','Beim Abbau gibt es manchmal Kristall (35 %)','Las rocas a veces dan cristal (35 %)','岩を掘ると水晶が出ることがある (35%)'],
+ i_frost:['바위를 캐면 서리 조각이 나올 때가 있어요 (50%)','Mining rocks sometimes gives frost shards (50%)','Les rochers donnent parfois des éclats de givre (50 %)','Beim Abbau gibt es manchmal Frostsplitter (50 %)','Las rocas a veces dan fragmentos de escarcha (50 %)','岩を掘ると霜のかけらが出ることがある (50%)'],
+ i_camp:['시작섬 평지에는 바위·광물이 없어요. 산에서만 나와요.','The start island has no rocks or ore on flat ground, only on mountains.','L\'île de départ n\'a ni rochers ni minerais en plaine, seulement en montagne.','Auf der Startinsel gibt es im Flachland keine Felsen oder Erze, nur in den Bergen.','En la isla inicial no hay rocas ni mena en el llano, solo en las montañas.','最初の島の平地には岩も鉱石もありません。山にだけあります。'],
+ i_vil:['안전한 섬이에요. 몬스터가 나오지 않고 주민 상점이 있어요.','A safe island: no monsters, with villager shops.','Une île sûre : pas de monstres, avec des boutiques de villageois.','Eine sichere Insel: keine Monster, dafür Dorfläden.','Una isla segura: sin monstruos y con tiendas de aldeanos.','安全な島です。モンスターは出ず、村人の店があります。'],
+ i_ph:['(아래 섬에 따라 보스가 나와요)','','','','',''],
  q_items:['아이템 이름으로 찾기','Search items by name','Chercher un objet','Gegenstand suchen','Buscar objeto','アイテム名で検索'],
  q_recipes:['결과물이나 재료 이름으로 찾기','Search by result or ingredient','Chercher par résultat ou ingrédient','Nach Ergebnis oder Zutat suchen','Buscar por resultado o ingrediente','完成品か材料の名前で検索'],
  count:['{n}개','{n} items','{n} objets','{n} Gegenstände','{n} objetos','{n}個'],
@@ -234,6 +261,43 @@ function renderRecipes(){
  let h='';for(const [g,arr] of groups)h+=`<div class="grp">${esc(tr(g))}</div>`+arr.map(recipeHTML).join('');
  document.getElementById('rlist').innerHTML=h||`<p class="none">—</p>`;
 }
+/* 섬: 나무·광석 비율은 게임 코드의 값이에요 */
+const SPN={oak:['참나무','Oak','Chêne','Eiche','Roble','ナラ'],zelkova:['느티나무','Zelkova','Zelkova','Zelkove','Zelkova','ケヤキ'],maple:['단풍나무','Maple','Érable','Ahorn','Arce','カエデ'],pine:['소나무','Pine','Pin','Kiefer','Pino','マツ'],shrub:['관목','Shrub','Arbuste','Strauch','Arbusto','低木'],cactus:['선인장','Cactus','Cactus','Kaktus','Cactus','サボテン'],palm:['야자나무','Palm','Palmier','Palme','Palmera','ヤシ'],mangrove:['맹그로브','Mangrove','Palétuvier','Mangrove','Mangle','マングローブ'],dead:['고사목','Dead tree','Arbre mort','Toter Baum','Árbol muerto','枯れ木'],snowpine:['설송','Snow pine','Pin des neiges','Schneekiefer','Pino nevado','雪松']};
+const ISL=[
+ {k:'camp',n:'시작섬',tr:[['oak'],['zelkova'],['maple'],['pine'],['shrub']],ore:[.003,.012,.015],rk:.35,mon:'슬라임',note:'i_camp'},
+ {k:'forest',n:'숲섬',tr:[['pine',55],['oak',17],['zelkova',18],['maple',10]],ore:[.003,.012,.015],rk:.3,mon:'늑대',boss:'늑대왕'},
+ {k:'desert',n:'사막섬',tr:[['cactus',70],['dead',15],['shrub',15]],ore:[0,.01,.02],rk:.25,mon:'전갈',boss:'거대 전갈'},
+ {k:'volcano',n:'화산섬',tr:[['dead',80],['shrub',20]],ore:[.01,.016,.022],rk:.26,mon:'불의 정령',boss:'불꽃 거인'},
+ {k:'jungle',n:'정글섬',tr:[['palm',60],['zelkova',25],['shrub',15]],ore:[.003,.012,.015],rk:.3,mon:'거미',boss:'독거미 여왕'},
+ {k:'mesa',n:'메사섬',tr:[['dead',40],['cactus',40],['shrub',20]],ore:[.005,.07,.04],rk:.55,mon:'뱀',boss:'모래뱀',note:'i_clay'},
+ {k:'stone',n:'돌섬',tr:[['pine',60],['shrub',40]],ore:[.01,.04,.06,.06],rk:.6,mon:'골렘',boss:'바위 거인',note:'i_cry'},
+ {k:'mangrove',n:'맹그로브섬',tr:[['mangrove',80],['shrub',20]],ore:[.003,.012,.015],rk:.25,mon:'악어',boss:'늪 악어왕'},
+ {k:'ice',n:'얼음섬',tr:[['snowpine',85],['shrub',15]],ore:[.004,.03,.05],rk:.5,mon:'설인',boss:'대설인',note:'i_frost'},
+ {k:'village',n:'마을섬',vil:1}
+];
+const spn=k=>SPN[k][LS.indexOf(LANG)]||SPN[k][0];
+const inm=ko=>(I.NM[ko]&&I.NM[ko][LANG])||ko;
+const mobRow=ko=>{const m=C.mobs.find(x=>x[0]===ko);return `<div class="src"><b>${esc(tr(ko))}</b>${m&&m[1].length?' · '+esc(t('i_drop',{s:m[1].map(nm).join(', ')})):''}</div>`;};
+function openIsland(k){
+ const o=ISL.find(x=>x.k===k);if(!o)return;ISH=k;
+ let h=`<button class="pb x" data-close>✕</button><div class="dh"><img src="shot-${o.k}.png" alt="" style="image-rendering:pixelated"><h2>${esc(inm(o.n))}</h2></div>`;
+ if(o.vil)h+=`<div class="src">${esc(t('i_vil'))}</div>`;
+ else{
+  h+=`<div class="sec">${esc(t('i_trees'))}</div><div class="ln">${o.tr.map(([sp,p])=>`<span>${esc(spn(sp))}${p?' <b>'+p+'%</b>':''}</span>`).join('')}</div>`;
+  const nmz=[['iron',2],['copper',1],['gold',0],['zinc',3]],ore=nmz.filter(([,i])=>o.ore[i]).sort((a,b)=>o.ore[b[1]]-o.ore[a[1]]);
+  h+=`<div class="sec">${esc(t('i_ore'))}</div><div class="ln"><span>${esc(t('i_orep',{s:''}).trim())}</span>${ore.map(([id,i])=>`<span>${esc(nm(id))} <b>${+(o.ore[i]*100).toFixed(1)}%</b></span>`).join('')}</div>`;
+  h+=`<div class="none">${esc(t('i_dens',{s:t(o.rk>=.5?'i_d3':o.rk>=.3?'i_d2':'i_d1')}))}</div>`;
+  if(o.note)h+=`<div class="src" style="margin-top:8px">${esc(t(o.note))}</div>`;
+  h+=`<div class="sec">${esc(t('i_mon'))}</div>${mobRow(o.mon)}`;
+  if(o.boss)h+=`<div class="sec">${esc(t('i_boss'))}</div>${mobRow(o.boss)}`;
+ }
+ document.getElementById('dbox').innerHTML=h;
+ document.getElementById('det').classList.add('on');document.getElementById('det').scrollTop=0;
+}
+let ISH=null;
+function renderIsl(){
+ document.getElementById('igr').innerHTML=ISL.map(o=>`<button class="card" data-isl="${o.k}"><img src="shot-${o.k}.png" alt="" loading="lazy">${esc(inm(o.n))}</button>`).join('');
+}
 let CI=null,CQ=1;
 function calcPlan(id,qty){
  const base=new Map(),steps=new Map();
@@ -299,9 +363,9 @@ function openItem(id){
 function closeItem(){document.getElementById('det').classList.remove('on');history.replaceState(null,'',location.pathname+(TAB!=='items'?'#'+TAB:''));}
 function setTab(tb){
  TAB=tb;
- for(const k of ['items','recipes','calc','guide'])document.getElementById('v_'+k).hidden=k!==tb;
+ for(const k of ['items','recipes','isl','calc','guide'])document.getElementById('v_'+k).hidden=k!==tb;
  document.querySelectorAll('#tabs .pb').forEach(b=>b.classList.toggle('on',b.dataset.tab===tb));
- if(tb==='recipes')renderRecipes();else if(tb==='calc')renderCalc();else if(tb==='guide')renderGuide();else renderItems();
+ if(tb==='recipes')renderRecipes();else if(tb==='isl')renderIsl();else if(tb==='calc')renderCalc();else if(tb==='guide')renderGuide();else renderItems();
 }
 function applyLang(){
  document.documentElement.lang=LANG;
@@ -310,16 +374,17 @@ function applyLang(){
  document.getElementById('qi').placeholder=t('q_items');document.getElementById('qr').placeholder=t('q_recipes');document.getElementById('qc').placeholder=t('q_calc');
  document.getElementById('lg').innerHTML=LS.map(l=>`<button class="pb${l===LANG?' on':''}" data-l="${l}">${NAMES[l]}</button>`).join('');
  setTab(TAB);
- const d=document.getElementById('det');if(d.classList.contains('on')){const id=decodeURIComponent(location.hash.slice(1));if(C.items[id])openItem(id);}
+ const d=document.getElementById('det');if(d.classList.contains('on')){const id=decodeURIComponent(location.hash.slice(1));if(C.items[id])openItem(id);else if(ISH&&TAB==='isl')openIsland(ISH);}
 }
 document.addEventListener('click',e=>{
- const el=e.target.closest('[data-l],[data-tab],[data-cat],[data-g],[data-calc],[data-id],[data-close],#det');if(!el)return;
+ const el=e.target.closest('[data-l],[data-tab],[data-cat],[data-g],[data-calc],[data-isl],[data-id],[data-close],#det');if(!el)return;
  if(el.id==='det'){if(e.target===el)closeItem();return;}
  if(el.dataset.l){LANG=el.dataset.l;try{localStorage.setItem(KEY,LANG);if(window.FFLang)FFLang.set(LANG);}catch(x){}applyLang();return;}
  if(el.dataset.tab){setTab(el.dataset.tab);history.replaceState(null,'',el.dataset.tab==='items'?location.pathname:'#'+el.dataset.tab);return;}
  if(el.dataset.cat){CAT=el.dataset.cat;renderItems();return;}
  if(el.dataset.g){GI=+el.dataset.g;renderGuide();return;}
  if(el.dataset.calc){CI=el.dataset.calc;renderCalc();return;}
+ if(el.dataset.isl){openIsland(el.dataset.isl);return;}
  if(el.hasAttribute('data-close')){closeItem();return;}
  if(el.dataset.id)openItem(el.dataset.id);
 });
@@ -328,7 +393,7 @@ document.getElementById('qi').addEventListener('input',renderItems);
 document.getElementById('qr').addEventListener('input',renderRecipes);
 document.getElementById('qc').addEventListener('input',renderCalc);
 document.addEventListener('input',e=>{if(e.target.id==='cq'){CQ=Math.max(1,Math.min(9999,+e.target.value||1));const v=e.target.value;renderCalc();const n=document.getElementById('cq');n.value=v;n.focus();}});
-{const h=decodeURIComponent(location.hash.slice(1));if(h==='recipes'||h==='guide'||h==='calc')TAB=h;applyLang();if(C.items[h])openItem(h);}
+{const h=decodeURIComponent(location.hash.slice(1));if(h==='recipes'||h==='guide'||h==='calc'||h==='isl')TAB=h;applyLang();if(C.items[h])openItem(h);}
 </script>
 <script src="https://frenchfries777mc.github.io/games/ff-auth.js"></script>
 </body>

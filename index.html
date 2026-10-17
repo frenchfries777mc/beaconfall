@@ -71,6 +71,9 @@ details p{margin:8px 2px 4px;text-shadow:2px 2px 0 #000;max-width:40em}
 ol.st{padding:0 0 0 24px;margin:0;text-shadow:2px 2px 0 #000;display:grid;gap:8px}
 footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 0 #000}
 .err{color:#ffb0a8}
+.joinrow{margin:12px 0 0;gap:8px;justify-content:center}
+.jin{width:min(260px,60vw);padding:8px 10px;border:3px solid var(--gold);background:var(--panel);color:var(--cream);font:15px inherit;box-shadow:4px 4px 0 #000b;outline:none}
+.jin::placeholder{color:#e9d9a488}
 </style>
 </head>
 <body>
@@ -90,6 +93,7 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
   <a class="pb big" id="playBtn" href="BEACONFALL-v0.3.html" data-i="b_play"></a>
   <a class="pb big" id="dlBtn" href="BEACONFALL-v0.3.html" download="BEACONFALL-v0.3.html" data-i="b_dl" style="border-color:var(--gold)"></a>
  </div>
+ <div class="row joinrow"><input class="jin" id="joinAddr" maxlength="24" autocomplete="off" spellcheck="false" data-ph="j_ph"><a class="pb" id="joinBtn" href="#play" data-i="j_btn"></a></div>
  <div class="meta" id="heroMeta" data-i="loading"></div>
 </header>
 <section id="versions">
@@ -149,9 +153,14 @@ function pick(){let s=null;try{s=localStorage.getItem(KEY);}catch(e){}
  for(const x of (navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'ko'])){const b=String(x).toLowerCase().split('-')[0];if(I.L.includes(b))return b;}
  return 'en';}
 let LANG=pick(),DATA=FALLBACK,NDATA=NOTES_FALLBACK;
+let LATEST_FILE=FALLBACK.latestFile;
 const t=(k,v)=>{const e=I.D[k];let s=(e&&(e[LANG]||e.ko))||'';if(v)for(const q in v)s=s.split('{'+q+'}').join(v[q]);return s;};
 const nm=ko=>{const e=I.NM[ko];return (e&&e[LANG])||ko;};
 const tv=(ver,f,ko)=>{const e=I.V[ver];return (e&&e[f]&&(e[f][LANG]||e[f].ko))||ko;};
+/* 친구 방 바로 참가: 방 주소를 넣으면 게임이 열리면서 그 방에 참가해요 */
+{const ja=document.getElementById('joinAddr'),jb=document.getElementById('joinBtn');
+ ja.addEventListener('input',()=>{ja.value=ja.value.replace(/[^a-zA-Z0-9_-]/g,'').slice(0,24);});
+ jb.addEventListener('click',e=>{const v=ja.value;if(!/^[a-zA-Z0-9_-]{3,24}$/.test(v)){e.preventDefault();ja.focus();return;}jb.href=LATEST_FILE+'?join='+encodeURIComponent(v);});}
 /* 배경 */
 const SHOTS=['camp','village','ice','volcano','desert','jungle','stone','mangrove','mesa','forest'];
 const bg=document.getElementById('bg');
@@ -176,7 +185,7 @@ function render(d){
  DATA=d;const list=Array.isArray(d.versions)?d.versions:[];
  if(!list.length){document.getElementById('latestBox').innerHTML='<div class="err">'+t('v_none')+'</div>';return;}
  const latest=list.find(v=>v.latest)||list[0],rest=list.filter(v=>v!==latest);
- document.getElementById('playBtn').href=d.latestFile||latest.file;
+ document.getElementById('playBtn').href=d.latestFile||latest.file;LATEST_FILE=d.latestFile||latest.file;
  const dl=document.getElementById('dlBtn');dl.href=latest.file;dl.setAttribute('download',latest.file.split('/').pop());
  document.getElementById('heroMeta').textContent=t('meta',{v:latest.version,d:latest.date,s:mb(latest.size)||'—'});
  document.getElementById('footVer').textContent=t('foot_v',{v:latest.version,d:d.updated||latest.date});
@@ -201,7 +210,7 @@ const lg=document.getElementById('lg');
 I.L.forEach(l=>{const b=document.createElement('button');b.className='pb';b.dataset.l=l;b.textContent=NAMES[l];b.onclick=()=>{LANG=l;try{localStorage.setItem(KEY,l);if(window.FFLang)FFLang.set(l);}catch(e){}applyLang();};lg.appendChild(b);});
 function applyLang(){
  document.documentElement.lang=LANG;
- document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i);});
+ document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i);});document.querySelectorAll('[data-ph]').forEach(e=>{e.placeholder=t(e.dataset.ph);});
  document.title=t('title');const m=document.querySelector('meta[name=description]');if(m)m.content=t('desc');
  lg.querySelectorAll('.pb').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
  labels();guide();render(DATA);renderNotes(NDATA);
