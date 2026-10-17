@@ -4184,6 +4184,37 @@ addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.on=
 addEventListener('keydown',e=>{if(e.key==='Control')ctrlDown=true;});
 addEventListener('keyup',e=>{if(e.key==='Control')ctrlDown=false;});
 addEventListener('blur',()=>{ctrlDown=false;});
+
+/* ===== Ctrl+커서 선택: Ctrl을 누른 채 사거리 안 블록에 커서를 올리면 선택, F로 상호작용·부수기 ===== */
+let csel=null,fHold=false;
+const SEL_IDS=new Set(['bench','trash','chest','bed','oven','furnace','armorbench','anvil','rsd','gauge','bell','controller','beacon','crafter','relay','tele','port','guard','feller','door','aquarium','tradepost','alchemy','runetable','trap','stall','mailbox','monument','flag','conveyor','sorter']);
+function cursorSel(){
+  if(!ctrlDown||!mouse.on||mode!=='play'||!world||crafting||P.dead||P.down||P.sleeping||P.sailing||P.air||mapOn)return null;
+  const wx=cam.x+mouse.x/S,wy=cam.y+mouse.y/S;
+  const gx=Math.floor(wx/GRID),gy=Math.floor(wy/GRID),hx=Math.floor(wx/CG),hy=Math.floor(wy/CG);
+  const reach=b=>{const [x0,y0,sz]=structBox(b);return Math.hypot(P.x-Math.max(x0,Math.min(P.x,x0+sz)),P.y-Math.max(y0,Math.min(P.y,y0+sz)))<=24;};
+  for(const b of [world.cgrid.get(hy*CW+hx),world.sgrid.get(gy*GW+gx),world.rgrid.get(gy*GW+gx),world.fgrid.get(gy*GW+gx)])if(b&&reach(b))return {kind:'s',b};
+  const T=world.trees,B=world.boulders;let best=null,bd=1e9;
+  for(let cy=(gy-1);cy<=gy+1;cy++)for(let cx=(gx-1);cx<=gx+1;cx++){
+    if(cx<0||cy<0||cx>=tgw)continue;
+    const tc=tgrid.get(cy*tgw+cx);
+    if(tc)for(const k of tc){
+      if(world.removed[k]||T.t[k]===4)continue;
+      const h=SPR[T.t[k]][0].h,dx=Math.abs(wx-T.x[k]);
+      if(dx>6||wy>T.y[k]+3||wy<T.y[k]-h||Math.hypot(T.x[k]-P.x,T.y[k]-P.y)>16)continue;
+      if(dx<bd){bd=dx;best={kind:'t',key:k,x:T.x[k],y:T.y[k],h};}
+    }
+    const bc=bgrid.get(cy*tgw+cx);
+    if(bc)for(const k of bc){
+      if(world.brem[k])continue;
+      const h=BOULDER[B.t[k]].h,dx=Math.abs(wx-B.x[k]);
+      if(dx>8||wy>B.y[k]+3||wy<B.y[k]-h||Math.hypot(B.x[k]-P.x,B.y[k]-P.y)>17)continue;
+      if(dx<bd){bd=dx;best={kind:'b',key:k,x:B.x[k],y:B.y[k],h};}
+    }
+  }
+  return best;
+}
+const selInteract=c=>c&&c.kind==='s'&&SEL_IDS.has(c.b.id)&&(c.b.layer==='c'||Math.hypot(P.x-c.b.x,P.y-(c.b.y-7))<=20)?c.b:null;   // 작업대 등은 20 안에서만 열려 있어서 같게 맞춰요
 function placeCell(kind){
   if(ctrlDown&&mouse.on&&mode==='play'&&!crafting&&kind&&STRUCT[kind]){   // Ctrl: 마우스 커서 위치에 설치
     const wx=cam.x+mouse.x/S,wy=cam.y+mouse.y/S,cs=STRUCT[kind].layer==='c'?CG:GRID;
@@ -4374,6 +4405,9 @@ function stationNear(mode){
   if(mode==='anvil')return world.structs.some(b=>b.id==='anvil'&&Math.hypot(P.x-b.x,P.y-(b.y-7))<=26);
   if(mode==='armor')return world.structs.some(b=>b.id==='armorbench'&&Math.hypot(P.x-b.x,P.y-(b.y-7))<=26);
   return true;
+}
+function doInteract(o,code){
+  if(o.id==='bench')openCraft('bench');else if(o.id==='chest')openChest(o);else if(o.id==='trader')tradeWith();else if(o.id==='trash')openTrash(o);else if(o.id==='oven'||o.id==='campfire')openCraft('cook');else if(o.id==='furnace'){smeltRef=o;smeltLast=o.fo?o.fo.n:0;openCraft('smelt');}else if(o.id==='armorbench')openArmor();else if(o.id==='anvil')openAnvil();else if(o.id==='cow')milkCow(o.a);else if(o.id==='chicken')feedChicken(o.a);else if(o.id==='conveyor')rotateConveyor(o);else if(o.id==='sorter'){if(code==='KeyF')rotateConveyor(o);else toggleSorterSide(o);}else if(o.id==='rsd'||o.id==='gauge'||o.id==='relay'||o.id==='tele'||o.id==='port')openSignalUI(o);else if(o.id==='bell')ringBell(o);else if(o.id==='guard')openGuardUI(o);else if(o.id==='vnpc')openShop(o.n);else if(o.id==='controller')toggleControl(o);else if(o.id==='beacon')callShip(o);else if(o.id==='ship')boardShip();else if(o.id==='crafter')openCrafterUI(o);else if(o.id==='feller')openFellerUI(o);else if(o.id==='door')toggleDoor(o);else if(o.id==='aquarium')openAquarium(o);else if(o.id==='cart')openCart();else if(o.id==='tradepost')openTradepost(o);else if(o.id==='alchemy')openAlchemy();else if(o.id==='runetable')openRunes();else if(o.id==='trap')openTrap(o);else if(o.id==='stall')openStall(o);else if(o.id==='mailbox')openMailbox(o);else if(o.id==='monument')openMonument(o);else if(o.id==='flag')openFlag(o);else if(o.id==='revive')reviveReq(o.peer);else if(o.id==='dunin')dunGo(1,'down');else if(o.id==='dunst')dunGo(o.k,o.dir);else trySleep(o);
 }
 function nearInteract(){
   let best=null,bd=1e9;
@@ -5207,6 +5241,8 @@ function updatePlayer(dt){
       P.starget=beltAtPt(P.x+P.fx*9,P.y+P.fy*9)||beltAtPt(P.x+P.fx*5,P.y+P.fy*5)||beltAtPt(P.x,P.y)||world.rgrid.get(fc.gy*GW+fc.gx)||world.fgrid.get(fc.gy*GW+fc.gx)||null;
       if(!P.starget){const o=cellOf(P.x,P.y);P.starget=world.rgrid.get(o.gy*GW+o.gx)||world.fgrid.get(o.gy*GW+o.gx)||null;}
     }
+    csel=cursorSel();   // Ctrl+커서로 고른 블록이 있으면 그걸 대상으로
+    if(csel){P.mtarget=null;P.atarget=null;P.starget=csel.kind==='s'&&!csel.b.lm?csel.b:null;P.target=csel.kind==='t'?csel.key:-1;P.btarget=csel.kind==='b'?csel.key:-1;}
     bowTick(dt);
     if(pendBreak.size){   // 참가자: 방장 답이 없으면 다시 보내요 (최대 3번)
       for(const [bk,q] of pendBreak){
@@ -5215,7 +5251,7 @@ function updatePlayer(dt){
         if(time-q.t>1.2){q.n++;q.t=time;sendHost({t:'break',key:bk});}
       }
     }
-    const can=P.hold&&$('#modal').hidden&&!crafting&&!P.air&&!P.down&&(!P.sailing||(P.mtarget&&P.mtarget.ty==='gship'))&&!rodMat()&&!bowMat();
+    const can=(P.hold||(fHold&&csel))&&$('#modal').hidden&&!crafting&&!P.air&&!P.down&&(!P.sailing||(P.mtarget&&P.mtarget.ty==='gship'))&&!rodMat()&&!bowMat();
     let work=null;
     if(can){
       if(P.mtarget){
@@ -5223,7 +5259,7 @@ function updatePlayer(dt){
       }else if(P.atarget){
         if(P.atkCd<=0){const w=weaponStats();P.atkCd=w.cd;P.atkAnim=0.22;P.swing=0;hitAnimal(P.atarget,w.dmg);if(w.tool)wearSel();}
       }else{
-        work=stickyWork();   // 하던 작업은 사거리 안이면 움직이면서도 이어가요
+        work=csel?null:stickyWork();   // 하던 작업은 사거리 안이면 움직이면서도 이어가요
         if(!work){
           if(P.starget)work=workFor('s',structKey(P.starget));
           else if(P.target>=0)work=workFor('t',P.target);
@@ -9226,6 +9262,11 @@ function drawPlayFx(g){
     g.fillRect(x0,y0,cs,1);g.fillRect(x0,y0+cs-1,cs,1);g.fillRect(x0,y0,1,cs);g.fillRect(x0+cs-1,y0,1,cs);
   }
   const bob=((time*4)|0)&1;
+  if(csel){   // Ctrl+커서로 고른 블록: 노란 테두리
+    g.fillStyle='rgba(255,226,122,0.95)';
+    if(csel.kind==='s'){const [x0,y0,sz]=structBox(csel.b);g.fillRect(x0-1,y0-1,sz+2,1);g.fillRect(x0-1,y0+sz,sz+2,1);g.fillRect(x0-1,y0,1,sz);g.fillRect(x0+sz,y0,1,sz);}
+    else{const x=csel.x,y=csel.y,h=csel.h;g.fillRect(x-7,y-h-1,15,1);g.fillRect(x-7,y+2,15,1);g.fillRect(x-7,y-h,1,h+2);g.fillRect(x+7,y-h,1,h+2);}
+  }
   if(P.mtarget&&!P.mtarget.burn){
     const m=P.mtarget;g.fillStyle='rgba(255,90,90,0.95)';
     g.fillRect(Math.round(m.x)-1,Math.round(m.y)-SLIME.h-14+bob,3,1);g.fillRect(Math.round(m.x),Math.round(m.y)-SLIME.h-13+bob,1,1);
@@ -9350,12 +9391,13 @@ addEventListener('keydown',e=>{
   else if((e.code==='Equal'||e.code==='NumpadAdd')&&!crafting){zoomStep(1);e.preventDefault();}
   else if((e.code==='Minus'||e.code==='NumpadSubtract')&&!crafting){zoomStep(-1);e.preventDefault();}
   else if(e.code==='KeyF'&&!e.repeat&&P.sleeping){wakeUp();}
-  else if((e.code==='ControlLeft'||e.code==='ControlRight'||e.code==='KeyF')&&!e.repeat&&!crafting){const o=nearInteract();if(o&&(e.code==='KeyF'||o.id==='conveyor'||o.id==='sorter')){e.preventDefault();if(o.id==='bench')openCraft('bench');else if(o.id==='chest')openChest(o);else if(o.id==='trader')tradeWith();else if(o.id==='trash')openTrash(o);else if(o.id==='oven'||o.id==='campfire')openCraft('cook');else if(o.id==='furnace'){smeltRef=o;smeltLast=o.fo?o.fo.n:0;openCraft('smelt');}else if(o.id==='armorbench')openArmor();else if(o.id==='anvil')openAnvil();else if(o.id==='cow')milkCow(o.a);else if(o.id==='chicken')feedChicken(o.a);else if(o.id==='conveyor')rotateConveyor(o);else if(o.id==='sorter'){if(e.code==='KeyF')rotateConveyor(o);else toggleSorterSide(o);}else if(o.id==='rsd'||o.id==='gauge'||o.id==='relay'||o.id==='tele'||o.id==='port')openSignalUI(o);else if(o.id==='bell')ringBell(o);else if(o.id==='guard')openGuardUI(o);else if(o.id==='vnpc')openShop(o.n);else if(o.id==='controller')toggleControl(o);else if(o.id==='beacon')callShip(o);else if(o.id==='ship')boardShip();else if(o.id==='crafter')openCrafterUI(o);else if(o.id==='feller')openFellerUI(o);else if(o.id==='door')toggleDoor(o);else if(o.id==='aquarium')openAquarium(o);else if(o.id==='cart')openCart();else if(o.id==='tradepost')openTradepost(o);else if(o.id==='alchemy')openAlchemy();else if(o.id==='runetable')openRunes();else if(o.id==='trap')openTrap(o);else if(o.id==='stall')openStall(o);else if(o.id==='mailbox')openMailbox(o);else if(o.id==='monument')openMonument(o);else if(o.id==='flag')openFlag(o);else if(o.id==='revive')reviveReq(o.peer);else if(o.id==='dunin')dunGo(1,'down');else if(o.id==='dunst')dunGo(o.k,o.dir);else trySleep(o);}}
+  else if(e.code==='KeyF'&&!crafting&&(csel=cursorSel())){e.preventDefault();const o=selInteract(csel);if(o){if(!e.repeat)doInteract(o,'KeyF');}else if(csel.kind!=='s'||!csel.b.lm)fHold=true;}
+  else if((e.code==='ControlLeft'||e.code==='ControlRight'||e.code==='KeyF')&&!e.repeat&&!crafting&&!(e.code!=='KeyF'&&cursorSel())){const o=nearInteract();if(o&&(e.code==='KeyF'||o.id==='conveyor'||o.id==='sorter')){e.preventDefault();doInteract(o,e.code);}}
   else if(e.code==='Space'){keys.add('Space');if(crafting&&!e.repeat)craftMaxAction();e.preventDefault();}
   else if(/^Digit[1-7]$/.test(e.code)){P.sel=+e.code.slice(5)-1;renderInv();}
 });
-addEventListener('keyup',e=>{keys.delete(e.code);if(e.code==='KeyQ')qEnd();});
-addEventListener('blur',()=>{keys.clear();P.hold=false;});
+addEventListener('keyup',e=>{keys.delete(e.code);if(e.code==='KeyQ')qEnd();if(e.code==='KeyF')fHold=false;});
+addEventListener('blur',()=>{keys.clear();P.hold=false;fHold=false;});
 
 /* ---------- 입력 (드래그로 둘러보기) ---------- */
 cv.addEventListener('pointerdown',e=>{
