@@ -12,8 +12,8 @@
    "summary": "사이트 도감, 상자 랜덤 배치, 멀티플레이 참가자 문제 수정, Ctrl+커서 블록 선택, 코드 정리",
    "latest": true,
    "size": 3084876,
-   "sha256": "29b919c170f7",
-   "build": 20
+   "sha256": "58c02b73018d",
+   "build": 52
   },
   {
    "version": "0.2",
@@ -24,7 +24,7 @@
    "latest": false,
    "size": 3074953,
    "sha256": "b010c734731a",
-   "build": 26
+   "build": 32
   },
   {
    "version": "0.1",
