@@ -7,7 +7,7 @@ BEACONFALL 사이트 (정적 사이트: 서버 프로그램이 필요 없어요)
   versions.json         버전 목록 (새 버전을 낼 때 맨 위에 한 줄 추가)
   (공략 글은 i18n.js 의 G 항목에 있어요)
   patchnotes.json       패치노트 (새 패치마다 맨 위에 항목 추가)
-  BEACONFALL-v0.1.html  게임 파일
+  BEACONFALL-v0.3.html  게임 파일 (이전 버전 파일도 함께 남겨요)
   shot-*.png, i-*.png   게임 화면(도트)과 아이템 아이콘
   Galmuri11*.woff2      도트 글꼴 (SIL OFL 1.1, OFL.txt 참고)
 

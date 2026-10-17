@@ -1,16 +1,26 @@
 {
  "name": "BEACONFALL",
- "latest": "0.2",
- "latestFile": "BEACONFALL-v0.2.html",
- "updated": "2026-10-15",
+ "latest": "0.3",
+ "latestFile": "BEACONFALL-v0.3.html",
+ "updated": "2026-10-17",
  "versions": [
+  {
+   "version": "0.3",
+   "date": "2026-10-17",
+   "file": "BEACONFALL-v0.3.html",
+   "title": "도감·멀티 안정화·블록 선택",
+   "summary": "사이트 도감, 상자 랜덤 배치, 멀티플레이 참가자 문제 수정, Ctrl+커서 블록 선택, 코드 정리",
+   "latest": true,
+   "size": 3070094,
+   "sha256": "137f1136a36d"
+  },
   {
    "version": "0.2",
    "date": "2026-10-15",
    "file": "BEACONFALL-v0.2.html",
    "title": "인트로·계정 저장·채팅",
    "summary": "인트로, Frenchfries777 계정 저장, 친구 바로 참가, 멀티 채팅(T), 확대·축소, 업적 20개 추가",
-   "latest": true,
+   "latest": false,
    "size": 3074953,
    "sha256": "b010c734731a"
   },
