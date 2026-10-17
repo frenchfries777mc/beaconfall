@@ -10158,7 +10158,7 @@ function frRender(){
   for(const f of acc){
     const s=st(f),m=frMeta(f.id),room=m&&m.room;
     let btn='';
-    if(s===2&&room!==myRoom&&room!==inGuest)btn=`<button class="btn sm" data-frjoin="${esc(room)}">참가</button>`;
+    if(s===2&&room!==myRoom&&room!==inGuest)btn=`<button class="btn sm" data-frjoin="${esc(room)}">참가</button>`+(f.reqT&&Date.now()-f.reqT<30000?`<span class="hint">요청함</span>`:`<button class="btn sm ghost" data-frreq="${esc(f.id)}">참가 요청</button>`);
     else if(s===2&&room===inGuest)btn=`<span class="hint">같은 방</span>`;
     else if(s>=1&&myRoom)btn=f.invT&&Date.now()-f.invT<30000?`<span class="hint">초대함</span>`:`<button class="btn sm ghost" data-frinv="${esc(f.id)}">초대</button>`;
     else if(s===1&&!inGuest)btn=f.reqT&&Date.now()-f.reqT<30000?`<span class="hint">요청함</span>`:`<button class="btn sm ghost" data-frreq="${esc(f.id)}">참가 요청</button>`;
