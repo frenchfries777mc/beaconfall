@@ -50,6 +50,16 @@ input.q{width:100%;padding:10px 12px;border:3px solid var(--gold);background:var
 .wh{font-size:11px;padding:2px 6px;border:1px solid var(--sky);color:var(--sky);white-space:nowrap}
 .wh.bk{border-color:#ffb0d0;color:#ffb0d0}
 .rn{flex-basis:100%;font-size:12px;color:#d9cfb0;margin-top:-2px}
+/* 계산기 */
+.cbar{display:flex;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.cbar img{width:40px;height:40px;background:#e9d9a41a;border:2px solid #e9d9a444}
+.cbar b{font-size:18px}
+.cbar input{width:84px;padding:6px 8px;border:3px solid var(--gold);background:var(--panel);color:var(--cream);font:15px inherit}
+.card.sel{border-color:var(--gold);background:#e9d9a426}
+.card .bn{color:var(--gold);font-weight:700;font-size:14px}
+.cst{display:flex;align-items:center;gap:10px;padding:6px 10px;border:2px solid #e9d9a444;background:var(--panel);margin:0 0 6px;cursor:pointer}
+.cst img{width:28px;height:28px}
+.cst span{margin-left:auto;font-size:12px;color:var(--sky)}
 /* 공략 */
 .gl{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
 .gl li{background:var(--panel);border-left:4px solid var(--gold);padding:8px 12px}
@@ -83,6 +93,7 @@ footer{padding:40px 0 30px;color:var(--gold);font-size:12px;text-shadow:2px 2px 
  <div class="row tabs" id="tabs">
   <button class="pb" data-tab="items" data-t="t_items"></button>
   <button class="pb" data-tab="recipes" data-t="t_recipes"></button>
+  <button class="pb" data-tab="calc" data-t="t_calc"></button>
   <button class="pb" data-tab="guide" data-t="t_guide"></button>
  </div>
  <div id="v_items">
@@ -94,6 +105,11 @@ footer{padding:40px 0 30px;color:var(--gold);font-size:12px;text-shadow:2px 2px 
  <div id="v_recipes" hidden>
   <input class="q" id="qr" autocomplete="off">
   <div id="rlist"></div>
+ </div>
+ <div id="v_calc" hidden>
+  <input class="q" id="qc" autocomplete="off">
+  <div class="grid" id="cgrid"></div>
+  <div id="cres"></div>
  </div>
  <div id="v_guide" hidden>
   <div class="row" id="gcats"></div>
@@ -114,6 +130,14 @@ const T={
  t_items:['아이템','Items','Objets','Gegenstände','Objetos','アイテム'],
  t_recipes:['레시피','Recipes','Recettes','Rezepte','Recetas','レシピ'],
  t_guide:['공략','Guide','Guide','Guide','Guía','攻略'],
+ t_calc:['재료 계산기','Calculator','Calculateur','Rechner','Calculadora','材料計算'],
+ q_calc:['만들고 싶은 아이템 이름','Item you want to make','Objet à fabriquer','Gegenstand, den du herstellen willst','Objeto que quieres fabricar','作りたいアイテム名'],
+ c_qty:['개수','Amount','Quantité','Anzahl','Cantidad','個数'],
+ c_base:['필요한 재료','Materials needed','Matériaux nécessaires','Benötigte Materialien','Materiales necesarios','必要な材料'],
+ c_steps:['만드는 순서','Crafting order','Ordre de fabrication','Herstellungsreihenfolge','Orden de fabricación','作る順番'],
+ c_times:['{n}번 제작','Craft {n}×','Fabriquer {n} fois','{n}× herstellen','Fabricar {n} veces','{n}回作る'],
+ c_note:['채집하거나 상점·몬스터·상자에서 얻는 재료까지 풀어서 계산해요. 여러 레시피가 있으면 첫 번째 레시피로 계산해요.','Counted down to items you gather or get from shops, monsters and chests. If there are several recipes, the first one is used.','Calculé jusqu\'aux objets récoltés ou obtenus en boutique, sur les monstres et dans les coffres. La première recette est utilisée s\'il y en a plusieurs.','Gerechnet bis zu Dingen, die man sammelt oder in Läden, von Monstern und aus Truhen bekommt. Bei mehreren Rezepten gilt das erste.','Se calcula hasta lo que se recolecta o se consigue en tiendas, monstruos y cofres. Con varias recetas se usa la primera.','採集、またはお店・モンスター・宝箱で手に入る材料まで分解して計算します。レシピが複数ある場合は最初のものを使います。'],
+ c_pick:['위에서 아이템을 골라 보세요','Pick an item above','Choisis un objet ci-dessus','Wähle oben einen Gegenstand','Elige un objeto arriba','上でアイテムを選んでください'],
  q_items:['아이템 이름으로 찾기','Search items by name','Chercher un objet','Gegenstand suchen','Buscar objeto','アイテム名で検索'],
  q_recipes:['결과물이나 재료 이름으로 찾기','Search by result or ingredient','Chercher par résultat ou ingrédient','Nach Ergebnis oder Zutat suchen','Buscar por resultado o ingrediente','完成品か材料の名前で検索'],
  count:['{n}개','{n} items','{n} objets','{n} Gegenstände','{n} objetos','{n}個'],
@@ -210,6 +234,32 @@ function renderRecipes(){
  let h='';for(const [g,arr] of groups)h+=`<div class="grp">${esc(tr(g))}</div>`+arr.map(recipeHTML).join('');
  document.getElementById('rlist').innerHTML=h||`<p class="none">—</p>`;
 }
+let CI=null,CQ=1;
+function calcPlan(id,qty){
+ const base=new Map(),steps=new Map();
+ const go=(id,n,path)=>{
+  const ms=MADE[id],r=ms&&!(C.gather[id]&&C.gather[id].length)&&path.length<10&&!path.includes(id)?C.recipes[ms.find(i=>!C.recipes[i].bk)??ms[0]]:null;
+  if(!r){base.set(id,(base.get(id)||0)+n);return;}
+  const oc=(r.o.find(o=>o[0]===id)||[0,1])[1]||1,crafts=Math.ceil(n/oc),ing=new Map();
+  r.p.forEach(p=>{if(!p)return;const x=Array.isArray(p)?p[0]:p.a[0],k=Array.isArray(p)?p[1]:p.n;ing.set(x,(ing.get(x)||0)+k);});
+  for(const [x,k] of ing)go(x,k*crafts,path.concat(id));
+  const st=steps.get(id);if(st)st.crafts+=crafts;else steps.set(id,{id,crafts,w:r.w});   // 재료를 먼저 만들도록 아래부터 쌓아요
+ };
+ go(id,qty,[]);
+ return {base,steps:[...steps.values()]};
+}
+function renderCalc(){
+ const q=document.getElementById('qc').value.trim().toLowerCase();
+ const list=Object.keys(MADE).filter(id=>C.items[id]&&(!q||nm(id).toLowerCase().includes(q)||C.items[id].n.includes(q))).slice(0,q?60:24);
+ document.getElementById('cgrid').innerHTML=list.map(id=>`<button class="card${id===CI?' sel':''}" data-calc="${esc(id)}"><img src="${ic(id)}" alt="" loading="lazy">${esc(nm(id))}</button>`).join('');
+ const box=document.getElementById('cres');
+ if(!CI){box.innerHTML=`<p class="none" style="margin-top:14px">${esc(t('c_pick'))}</p>`;return;}
+ const pl=calcPlan(CI,CQ);
+ box.innerHTML=`<div class="cbar"><img src="${ic(CI)}" alt=""><b>${esc(nm(CI))}</b><label>${esc(t('c_qty'))} <input type="number" id="cq" min="1" max="9999" value="${CQ}"></label></div>`
+  +`<div class="sec">${esc(t('c_base'))}</div><div class="grid">${[...pl.base].map(([id,n])=>`<button class="card" data-id="${esc(id)}"><img src="${ic(id)}" alt="" loading="lazy">${esc(nm(id))}<span class="bn">×${n}</span></button>`).join('')}</div>`
+  +(pl.steps.length?`<div class="sec">${esc(t('c_steps'))}</div>${pl.steps.map(s=>`<div class="cst" data-id="${esc(s.id)}"><img src="${ic(s.id)}" alt="">${esc(nm(s.id))} · ${esc(t('c_times',{n:s.crafts}))}<span>${esc(tr(s.w))}</span></div>`).join('')}`:'')
+  +`<p class="none" style="margin-top:14px">${esc(t('c_note'))}</p>`;
+}
 let GI=0;
 function renderGuide(){
  const g=I.G||[];
@@ -249,33 +299,36 @@ function openItem(id){
 function closeItem(){document.getElementById('det').classList.remove('on');history.replaceState(null,'',location.pathname+(TAB!=='items'?'#'+TAB:''));}
 function setTab(tb){
  TAB=tb;
- for(const k of ['items','recipes','guide'])document.getElementById('v_'+k).hidden=k!==tb;
+ for(const k of ['items','recipes','calc','guide'])document.getElementById('v_'+k).hidden=k!==tb;
  document.querySelectorAll('#tabs .pb').forEach(b=>b.classList.toggle('on',b.dataset.tab===tb));
- if(tb==='recipes')renderRecipes();else if(tb==='guide')renderGuide();else renderItems();
+ if(tb==='recipes')renderRecipes();else if(tb==='calc')renderCalc();else if(tb==='guide')renderGuide();else renderItems();
 }
 function applyLang(){
  document.documentElement.lang=LANG;
  document.querySelectorAll('[data-t]').forEach(el=>el.textContent=t(el.dataset.t));
  document.title='BEACONFALL · '+t('title');
- document.getElementById('qi').placeholder=t('q_items');document.getElementById('qr').placeholder=t('q_recipes');
+ document.getElementById('qi').placeholder=t('q_items');document.getElementById('qr').placeholder=t('q_recipes');document.getElementById('qc').placeholder=t('q_calc');
  document.getElementById('lg').innerHTML=LS.map(l=>`<button class="pb${l===LANG?' on':''}" data-l="${l}">${NAMES[l]}</button>`).join('');
  setTab(TAB);
  const d=document.getElementById('det');if(d.classList.contains('on')){const id=decodeURIComponent(location.hash.slice(1));if(C.items[id])openItem(id);}
 }
 document.addEventListener('click',e=>{
- const el=e.target.closest('[data-l],[data-tab],[data-cat],[data-g],[data-id],[data-close],#det');if(!el)return;
+ const el=e.target.closest('[data-l],[data-tab],[data-cat],[data-g],[data-calc],[data-id],[data-close],#det');if(!el)return;
  if(el.id==='det'){if(e.target===el)closeItem();return;}
  if(el.dataset.l){LANG=el.dataset.l;try{localStorage.setItem(KEY,LANG);if(window.FFLang)FFLang.set(LANG);}catch(x){}applyLang();return;}
  if(el.dataset.tab){setTab(el.dataset.tab);history.replaceState(null,'',el.dataset.tab==='items'?location.pathname:'#'+el.dataset.tab);return;}
  if(el.dataset.cat){CAT=el.dataset.cat;renderItems();return;}
  if(el.dataset.g){GI=+el.dataset.g;renderGuide();return;}
+ if(el.dataset.calc){CI=el.dataset.calc;renderCalc();return;}
  if(el.hasAttribute('data-close')){closeItem();return;}
  if(el.dataset.id)openItem(el.dataset.id);
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeItem();});
 document.getElementById('qi').addEventListener('input',renderItems);
 document.getElementById('qr').addEventListener('input',renderRecipes);
-{const h=decodeURIComponent(location.hash.slice(1));if(h==='recipes'||h==='guide')TAB=h;applyLang();if(C.items[h])openItem(h);}
+document.getElementById('qc').addEventListener('input',renderCalc);
+document.addEventListener('input',e=>{if(e.target.id==='cq'){CQ=Math.max(1,Math.min(9999,+e.target.value||1));const v=e.target.value;renderCalc();const n=document.getElementById('cq');n.value=v;n.focus();}});
+{const h=decodeURIComponent(location.hash.slice(1));if(h==='recipes'||h==='guide'||h==='calc')TAB=h;applyLang();if(C.items[h])openItem(h);}
 </script>
 <script src="https://frenchfries777mc.github.io/games/ff-auth.js"></script>
 </body>
