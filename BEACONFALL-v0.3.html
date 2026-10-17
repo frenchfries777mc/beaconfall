@@ -344,7 +344,7 @@ html:not(.introDone) #ui,html:not(.introDone) #authgate,html:not(.introDone) #au
     <button class="btn" data-act="multi"><span class="arrow">▶</span>멀티 플레이<span class="en">MULTIPLAYER</span></button>
     <button class="btn" data-act="stats"><span class="arrow">▶</span>통계<span class="en">STATS</span></button>
     <button class="btn" data-act="settings"><span class="arrow">▶</span>설정<span class="en">SETTINGS</span></button>
-    <p class="foot">v0.3<br>build 63</p>
+    <p class="foot">v0.3<br>build 64</p>
   </nav>
 </div>
 
@@ -2581,7 +2581,7 @@ function drawWhales(g,x0,y0,x1,y1){
     const cyc=(time+w.ph)%26,up=cyc<4?Math.sin(cyc/4*Math.PI):0,ang=Math.atan2(w.vy,w.vx);
     g.save();g.translate(Math.round(x),Math.round(y+Math.sin(time*0.7+i)*1.5));g.rotate(ang);
     g.globalAlpha=w.a*(0.3+up*0.4);
-    whaleShape(g,w.L,up>0.3?'#2a5878':'#06203c',up>0.3?'#cfe8f2':null);
+    whaleShape(g,w.L,up>0.3?'#6fa8c4':'#06203c',up>0.3?'#d8eef6':null);
     g.restore();
     g.globalAlpha=w.a;
     if(up>0.2){   // 숨 쉬는 물줄기와 물결
@@ -9983,7 +9983,7 @@ function drawSkyFx(g,dkn){
     if(ssStar){
       const s=ssStar;s.l+=fr;s.x+=s.vx*fr;s.y+=s.vy*fr;
       const a=Math.max(0,1-s.l/1.1);
-      for(let k=0;k<14;k++){g.fillStyle=`rgba(255,255,240,${(a*(1-k/14)).toFixed(2)})`;g.fillRect(Math.round(s.x-s.vx*k*0.012),Math.round(s.y-s.vy*k*0.012),1,1);}
+      for(let k=0;k<26;k++){g.fillStyle=`rgba(255,255,240,${(a*(1-k/26)).toFixed(2)})`;const sz=k<6?2:1;g.fillRect(Math.round(s.x-s.vx*k*0.011),Math.round(s.y-s.vy*k*0.011),sz,sz);}
       if(s.l>1.1)ssStar=null;
     }
   }
@@ -10055,7 +10055,7 @@ function drawAmbient(g,ix,iy,dkn){
     for(let x=0;x<Wd;x+=2){
       const wv=Math.sin(x*0.03+time*0.6)+Math.sin(x*0.011-time*0.35)*0.8,top=Hd*0.04+wv*8,len=Hd*0.22+Math.sin(x*0.02+time*0.5)*14;
       const col=Math.sin(x*0.012+time*0.2)>0.2?'90,255,170':'170,120,255';
-      for(let k=0;k<6;k++){g.fillStyle=`rgba(${col},${(a0*0.22*(1-k/6)).toFixed(3)})`;g.fillRect(x,top+k*len/6,2,len/6+1);}
+      for(let k=0;k<6;k++){g.fillStyle=`rgba(${col},${(a0*0.34*(1-k/6)).toFixed(3)})`;g.fillRect(x,top+k*len/6,2,len/6+1);}
     }
   }
   // 사막 아지랑이 (한낮)
