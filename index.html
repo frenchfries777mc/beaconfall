@@ -58,6 +58,8 @@ h2::before{content:"■ ";color:var(--gold)}
 .vl{display:flex;flex-direction:column;gap:10px}
 .vrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .vrow .pb{font-size:14px;padding:8px 12px}
+.vcol{display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px}
+.vb{font-size:12px;opacity:.8;text-shadow:2px 2px 0 #000;padding-left:2px}
 .vtxt{text-shadow:2px 2px 0 #000;margin:4px 0 0;max-width:38em}
 .nl{display:flex;flex-direction:column;gap:10px}
 .nl ul{margin:8px 0 4px 18px;padding:0;text-shadow:2px 2px 0 #000}
@@ -142,7 +144,7 @@ footer{padding:50px 0 40px;color:var(--gold);font-size:13px;text-shadow:2px 2px 
 </div>
 <script src="i18n.js"></script>
 <script>
-const FALLBACK={"latest":"0.3","latestFile":"BEACONFALL-v0.3.html","updated":"2026-10-17","versions":[{"version":"0.3","date":"2026-10-17","file":"BEACONFALL-v0.3.html","title":"도감·멀티 안정화·블록 선택","summary":"사이트 도감, 상자 랜덤 배치, 멀티플레이 참가자 문제 수정, Ctrl+커서 블록 선택, 코드 정리","latest":true,"size":0},{"version":"0.2","date":"2026-10-15","file":"BEACONFALL-v0.2.html","title":"인트로·계정 저장·채팅","summary":"인트로, Frenchfries777 계정 저장, 친구 바로 참가, 멀티 채팅(T), 확대·축소, 업적 20개 추가","latest":false,"size":0},{"version":"0.1","date":"2026-10-14","file":"BEACONFALL-v0.1.html","title":"첫 공개","summary":"30개의 섬이 떠 있는 바다에서 짓고, 만들고, 탐험하는 협동 생존.","latest":false,"size":0}]};
+const FALLBACK={"latest":"0.3","latestFile":"BEACONFALL-v0.3.html","updated":"2026-10-17","versions":[{"version":"0.3","build":20,"date":"2026-10-17","file":"BEACONFALL-v0.3.html","title":"도감·멀티 안정화·블록 선택","summary":"사이트 도감, 상자 랜덤 배치, 멀티플레이 참가자 문제 수정, Ctrl+커서 블록 선택, 코드 정리","latest":true,"size":0},{"version":"0.2","build":26,"date":"2026-10-15","file":"BEACONFALL-v0.2.html","title":"인트로·계정 저장·채팅","summary":"인트로, Frenchfries777 계정 저장, 친구 바로 참가, 멀티 채팅(T), 확대·축소, 업적 20개 추가","latest":false,"size":0},{"version":"0.1","build":6,"date":"2026-10-14","file":"BEACONFALL-v0.1.html","title":"첫 공개","summary":"30개의 섬이 떠 있는 바다에서 짓고, 만들고, 탐험하는 협동 생존.","latest":false,"size":0}]};
 const NOTES_FALLBACK={notes:[]};
 const I=window.I18N,esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mb=n=>!n?'':(n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB');
@@ -189,7 +191,7 @@ function render(d){
  const dl=document.getElementById('dlBtn');dl.href=latest.file;dl.setAttribute('download',latest.file.split('/').pop());
  document.getElementById('heroMeta').textContent=t('meta',{v:latest.version,d:latest.date,s:mb(latest.size)||'—'});
  document.getElementById('footVer').textContent=t('foot_v',{v:latest.version,d:d.updated||latest.date});
- const row=(v,tag)=>'<div><div class="vrow"><span class="pb on">'+(tag?t('v_latest')+' ':'')+'v'+esc(v.version)+'</span><span>'+esc(v.date)+(v.size?' · '+mb(v.size):'')+'</span><a class="pb" href="'+esc(v.file)+'">'+t('b_play')+'</a><a class="pb" href="'+esc(v.file)+'" download="'+esc(v.file.split('/').pop())+'">'+t('b_dl')+'</a></div><p class="vtxt"><b>'+esc(tv(v.version,'title',v.title))+'</b> — '+esc(tv(v.version,'summary',v.summary))+'</p></div>';
+ const row=(v,tag)=>'<div><div class="vrow"><span class="vcol"><span class="pb on">'+(tag?t('v_latest')+' ':'')+'v'+esc(v.version)+'</span>'+(v.build?'<small class="vb">build '+esc(v.build)+'</small>':'')+'</span><span>'+esc(v.date)+(v.size?' · '+mb(v.size):'')+'</span><a class="pb" href="'+esc(v.file)+'">'+t('b_play')+'</a><a class="pb" href="'+esc(v.file)+'" download="'+esc(v.file.split('/').pop())+'">'+t('b_dl')+'</a></div><p class="vtxt"><b>'+esc(tv(v.version,'title',v.title))+'</b> — '+esc(tv(v.version,'summary',v.summary))+'</p></div>';
  document.getElementById('latestBox').innerHTML=row(latest,true);
  document.getElementById('historyBox').innerHTML=rest.map(v=>row(v,false)).join('')||'<span style="text-shadow:2px 2px 0 #000">—</span>';
 }
