@@ -366,7 +366,7 @@ html:not(.introDone) #ui,html:not(.introDone) #authgate,html:not(.introDone) #au
     <button class="btn" data-act="skins"><span class="arrow">▶</span>스킨 상점<span class="en">SKIN SHOP</span></button>
     <button class="btn" data-act="stats"><span class="arrow">▶</span>통계<span class="en">STATS</span></button>
     <button class="btn" data-act="settings"><span class="arrow">▶</span>설정<span class="en">SETTINGS</span></button>
-    <p class="foot">v0.3<br>build 71</p>
+    <p class="foot">v0.3<br>build 72</p>
   </nav>
 </div>
 
@@ -11588,10 +11588,27 @@ function csAsk(row,uid){
   let n=0;try{const s=JSON.parse(row.data['stranded.lobby.v1']||'{}');n=Array.isArray(s.worlds)?s.worlds.length:0;}catch(e){}
   const when=new Date(Date.parse(row.updated_at)||Date.now()).toLocaleString();
   const html=`<h2>계정 저장<small>CLOUD</small></h2><div class="row col"><label>이 계정에 다른 기기에서 저장한 진행이 있어요.<br>${esc(when)} · 월드 ${n}</label></div><div class="row col"><label>불러오면 이 기기의 진행이 계정 저장으로 바뀌어요. 이 기기 것을 쓰면 계정 저장이 이 기기 진행으로 바뀌어요.</label></div><div class="actions"><button class="btn sm ghost" data-cskeep>이 기기 진행 쓰기</button><button class="btn sm" data-csload>계정 저장 불러오기</button></div>`;
-  try{openModal(html,m=>{m.querySelector('[data-csload]').onclick=()=>{closeModal();csLoad(row,uid);};m.querySelector('[data-cskeep]').onclick=()=>{closeModal();csState='';csOn=true;csDirty=true;csPush();};},'settings');}catch(e){}
+  try{openModal(html,m=>{m.querySelector('[data-csload]').onclick=()=>{closeModal();csLoad(row,uid);};m.querySelector('[data-cskeep]').onclick=()=>{closeModal();csState='';csOn=true;csSetOwner(uid);csDirty=true;csPush();};},'settings');}catch(e){}
+}
+/* 같은 브라우저에서 다른 계정으로 바꿔 로그인하면 계정끼리 저장 데이터가 섞이지 않게, 이전 계정의 저장을 따로 보관하고 새 계정의 보관분(없으면 빈 상태)으로 바꿔요 */
+const CS_ACCT='stranded.acct.';
+function csSetOwner(uid){try{if(uid)localStorage.setItem(CS_U,uid);}catch(e){}}
+function csSwapAccount(old,uid){
+  window.bfCloudLoading=true;
+  try{
+    localStorage.setItem(CS_ACCT+old,JSON.stringify({d:csKeys(),t:localStorage.getItem(CS_T)||''}));
+    const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&csOk(k))ks.push(k);}
+    for(const k of ks)localStorage.removeItem(k);
+    localStorage.removeItem(CS_T);
+    const st=localStorage.getItem(CS_ACCT+uid);
+    if(st){const o=JSON.parse(st);for(const k in o.d)if(csOk(k)&&typeof o.d[k]==='string')localStorage.setItem(k,o.d[k]);if(o.t)localStorage.setItem(CS_T,o.t);localStorage.removeItem(CS_ACCT+uid);}
+    localStorage.setItem(CS_U,uid);
+  }catch(e){window.bfCloudLoading=false;return false;}
+  location.reload();return true;
 }
 async function csLogin(uid){
   csUid=uid||null;csOn=false;csState='';csFail=0;
+  if(uid){let lu0='';try{lu0=localStorage.getItem(CS_U)||'';}catch(e){}if(lu0&&lu0!==uid&&csSwapAccount(lu0,uid))return;}
   if(!sb||!uid)return;
   let row=null;
   try{const r=await sb.from(CS_TB).select('data,updated_at').eq('user_id',uid).maybeSingle();if(r.error){csState='off';return;}row=r.data;}catch(e){csState='off';return;}
@@ -11603,7 +11620,7 @@ async function csLogin(uid){
     if(!local){csLoad(row,uid);return;}
     csState='ask';csAsk(row,uid);return;
   }
-  csOn=true;csDirty=true;csPush();
+  csOn=true;csSetOwner(uid);csDirty=true;csPush();
 }
 setInterval(()=>{if(csDirty)csPush();},45000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&csDirty)csPush();});
