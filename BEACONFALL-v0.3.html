@@ -366,7 +366,7 @@ html:not(.introDone) #ui,html:not(.introDone) #authgate,html:not(.introDone) #au
     <button class="btn" data-act="skins"><span class="arrow">▶</span>스킨 상점<span class="en">SKIN SHOP</span></button>
     <button class="btn" data-act="stats"><span class="arrow">▶</span>통계<span class="en">STATS</span></button>
     <button class="btn" data-act="settings"><span class="arrow">▶</span>설정<span class="en">SETTINGS</span></button>
-    <p class="foot">v0.3<br>build 70</p>
+    <p class="foot">v0.3<br>build 71</p>
   </nav>
 </div>
 
@@ -8594,6 +8594,8 @@ const ACH=[
   {id:'settle_8',cat:'특별',name:'정착지 완성',desc:'주민 8명과 함께 살기',prog:()=>[Math.min(8,world&&world.structs?huRes().length:0),8]},
   {id:'all',cat:'특별',name:'모든 업적',desc:'다른 업적을 모두 달성하기 (함께 업적 제외)',prog:()=>[ACH.filter(a=>a.id!=='all'&&a.cat!=='함께'&&settings.ach[a.id]).length,ACH.filter(a=>a.id!=='all'&&a.cat!=='함께').length]}
 ];
+const ACH_BC={'isl_1':5,'boat':5,'treasure_1':5,'kill_1':5,'potion_throw':5,'sleep':5,'trade':5,'feast':5,'mail':5,'guestbook':5,'air':10,'horse':10,'dun_1':10,'reef':10,'rune':10,'repair':10,'alch_1':10,'conveyor':10,'sorter':10,'signal':10,'tame':10,'plant_all':10,'revive':10,'circuit':10,'craft_rgold':10,'cold':10,'boss_1':15,'relic_1':15,'settle_1':15,'fort':15,'autocraft':15,'reset':15,'forge_3':15,'armor_full':15,'fish_legend':15,'ghost':15,'reinf_all':15,'isl_10':20,'dun_5':20,'kill_100':20,'day_30':20,'ruins_all':20,'treasure_all':20,'settle_4':20,'contest_win':20,'forge_all':20,'alch_all':20,'vcore':20,'isl_all':25,'kill_all':25,'fish_all':25,'fort_boss':25,'boss_all':30,'settle_8':30,'beacon':30,'escape':30,'day_100':30,'relic_all':30,'void_kill':40,'all':50};   // 업적 보상 BeaCoin (5~50, 난이도 순)
+const achBc=id=>ACH_BC[id]||10;
 const ACH_MONS=['slime','wolf','scorpion','spirit','spider','snake','golem','croc','yeti'];
 const ACH_BOSSES=['bwolf','bscorp','bmagma','bspider','bsnake','bgolem','bcroc','byeti'];
 const achCount=k=>Object.keys(settings.achc[k]||{}).length;
@@ -8601,8 +8603,8 @@ function achMark(k,key){const c=(settings.achc[k]=settings.achc[k]||{});if(!c[ke
 let achQ=[],achShowT=0;
 function achGrant(id){
   if(settings.ach[id])return;
-  settings.ach[id]=Date.now();saveSettings();
-  const a=ACH.find(q=>q.id===id);if(a)achQ.push(a);
+  settings.ach[id]=Date.now();settings.bc=(settings.bc|0)+achBc(id);saveSettings();
+  const a=ACH.find(q=>q.id===id);if(a)achQ.push(Object.assign({bc:achBc(id)},a));
   achSync();
   if(ACH.every(q=>q.id==='all'||q.cat==='함께'||settings.ach[q.id]))achGrant('all');
 }
@@ -8851,7 +8853,7 @@ function achPopTick(dt){
   if(mode==='play'&&world&&world.clock!==undefined){const dn=dayNow();if(dn>=30)achGrant('day_30');if(dn>=100)achGrant('day_100');}
   const el=$('#achpop');
   if(achShowT>0){achShowT-=dt;if(achShowT<=0)el.classList.remove('on');return;}
-  if(achQ.length){const a=achQ.shift();el.innerHTML=`<b>${a.h||'★ 업적 달성'}</b>${esc(a.name)}`;el.classList.add('on');achShowT=3.4;}
+  if(achQ.length){const a=achQ.shift();el.innerHTML=`<b>${a.h||'★ 업적 달성'}</b>${esc(a.name)}${a.bc?` <i data-noi18n="1" style="font-style:normal;color:#ffd34d">+${bC(a.bc)}</i>`:''}`;el.classList.add('on');achShowT=3.4;}
 }
 function achKill(ty){
   if(ty==='gship'){jrAdd('ghost');achGrant('ghost');}
@@ -8955,7 +8957,7 @@ function toggleAch(){
     html+=`<div class="achcat">${c}</div>`;
     for(const a of ACH.filter(q=>q.cat===c)){
       const on=!!settings.ach[a.id],pr=a.prog?a.prog():null;
-      html+=`<div class="achrow${on?' on':''}"><b>${on?'★ ':'☆ '}${esc(a.name)}</b><span>${esc(a.desc)}</span>${pr&&!on?`<i>${pr[0]} / ${pr[1]}</i>`:''}</div>`;
+      html+=`<div class="achrow${on?' on':''}"><b>${on?'★ ':'☆ '}${esc(a.name)} <small data-noi18n="1" style="color:#8a5a00;font-weight:700">+${bC(achBc(a.id))}</small></b><span>${esc(a.desc)}</span>${pr&&!on?`<i>${pr[0]} / ${pr[1]}</i>`:''}</div>`;
     }
   }
   html+=`<div class="actions"><button class="btn sm" data-fdex>낚시 도감</button><button class="btn sm" data-stats>통계</button><button class="btn sm ghost" data-close>닫기</button></div>`;
