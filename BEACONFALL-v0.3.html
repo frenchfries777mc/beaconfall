@@ -328,6 +328,26 @@ html:not(.introDone) #ui,html:not(.introDone) #authgate,html:not(.introDone) #au
 #introScr .bg img{height:1.15em;width:auto;filter:drop-shadow(0 0 10px #000a)}
 #introScr.run .s1{animation:itSc 3s 0s both}#introScr.run .s2{animation:itSc 3s 3s both}
 @keyframes itSc{0%{opacity:0}33%{opacity:1}66%{opacity:1}100%{opacity:0}}
+/* 디자인 다듬기: 나무·황동 톤으로 통일 */
+#backbtn,#statbtn,#photobtn,#bpbtn,#rollbtn{ color:#f6efd8; text-shadow:1px 1px 0 rgba(0,0,0,.55);
+  background:linear-gradient(180deg,#7d5c32 0 50%,#6a4a26 50% 100%);
+  box-shadow:0 -4px 0 0 var(--ink),0 4px 0 0 var(--ink),-4px 0 0 0 var(--ink),4px 0 0 0 var(--ink),
+             0 -7px 0 -3px #c9a24a,0 7px 0 -3px #c9a24a,-7px 0 0 -3px #c9a24a,7px 0 0 -3px #c9a24a,
+             inset 0 -5px 0 0 #43301a,inset 0 3px 0 0 rgba(255,232,160,.38); }
+#backbtn:hover,#statbtn:hover,#photobtn:hover,#bpbtn:hover,#rollbtn:hover{ background:linear-gradient(180deg,#a07a44 0 50%,#8a6434 50% 100%); }
+.slot{ background:repeating-linear-gradient(0deg,rgba(0,0,0,.09) 0 2px,rgba(255,255,255,.025) 2px 5px),radial-gradient(ellipse at 50% 35%,rgba(120,84,44,.55),rgba(40,26,12,.92) 80%);
+  box-shadow:0 -3px 0 0 var(--ink),0 3px 0 0 var(--ink),-3px 0 0 0 var(--ink),3px 0 0 0 var(--ink),inset 0 3px 0 0 rgba(255,235,170,.12),inset 0 -3px 0 0 rgba(0,0,0,.35); }
+.slot.sel{ animation:selGlow 1.6s ease-in-out infinite; }
+@keyframes selGlow{ 0%,100%{ box-shadow:0 -3px 0 0 var(--gold),0 3px 0 0 var(--gold),-3px 0 0 0 var(--gold),3px 0 0 0 var(--gold),0 0 8px 1px rgba(242,199,90,.35),inset 0 3px 0 0 rgba(255,235,170,.14); }
+  50%{ box-shadow:0 -3px 0 0 var(--gold),0 3px 0 0 var(--gold),-3px 0 0 0 var(--gold),3px 0 0 0 var(--gold),0 0 14px 3px rgba(242,199,90,.6),inset 0 3px 0 0 rgba(255,235,170,.2); } }
+#hp{ padding:3px 9px 2px; background:linear-gradient(180deg,rgba(74,50,26,.86),rgba(38,24,11,.9));
+  box-shadow:0 -3px 0 0 var(--ink),0 3px 0 0 var(--ink),-3px 0 0 0 var(--ink),3px 0 0 0 var(--ink),0 -5px 0 -2px #c9a24a,0 5px 0 -2px #c9a24a,inset 0 2px 0 rgba(255,232,160,.22); }
+#clock{ background:linear-gradient(180deg,rgba(94,64,34,.97),rgba(58,38,18,.98)); }
+.modal:not([data-shop]) h2::after{ content:''; display:block; height:4px; margin-top:9px;
+  background:repeating-linear-gradient(90deg,var(--gold) 0 8px,transparent 8px 12px); opacity:.45; }
+.modal h3::before{ content:'◆'; margin-right:7px; font-size:11px; color:var(--gold); opacity:.8; vertical-align:2px; }
+.modal .btn.sm{ box-shadow:0 -4px 0 0 var(--ink),0 4px 0 0 var(--ink),-4px 0 0 0 var(--ink),4px 0 0 0 var(--ink),inset 0 -5px 0 0 var(--btn-d),inset 0 3px 0 0 rgba(255,255,255,.65); }
+#toast{ box-shadow:0 -4px 0 0 var(--ink),0 4px 0 0 var(--ink),-4px 0 0 0 var(--ink),4px 0 0 0 var(--ink),0 -7px 0 -3px #c9a24a,0 7px 0 -3px #c9a24a,-7px 0 0 -3px #c9a24a,7px 0 0 -3px #c9a24a,inset 0 3px 0 0 rgba(255,255,255,.08); }
 </style>
 </head>
 <body>
@@ -344,7 +364,7 @@ html:not(.introDone) #ui,html:not(.introDone) #authgate,html:not(.introDone) #au
     <button class="btn" data-act="multi"><span class="arrow">▶</span>멀티 플레이<span class="en">MULTIPLAYER</span></button>
     <button class="btn" data-act="stats"><span class="arrow">▶</span>통계<span class="en">STATS</span></button>
     <button class="btn" data-act="settings"><span class="arrow">▶</span>설정<span class="en">SETTINGS</span></button>
-    <p class="foot">v0.3<br>build 66</p>
+    <p class="foot">v0.3<br>build 67</p>
   </nav>
 </div>
 
@@ -968,6 +988,21 @@ const TREE_DEFS=[
   [PINE,{d:'#143d2b',g:'#1f6b43',h:'#3a9a5c',...TR}],
   [BUSH,{d:'#24602c',g:'#3a8f3e',h:'#6ac05a',...TR}],
 ];
+const SPRS=[null,null,null,null];
+function seasonTreePal(t,se){   // 계절마다 달라지는 나뭇잎 색
+  const TRK={t:'#7a4e2c',T:'#573418'};
+  if(t===2)return null;
+  const oakish=t===0||t===1||t===4,pine=t===3;
+  if(se===0){if(oakish)return t===4?{d:'#3a7a3a',g:'#6ab04a',h:'#f4a8c8',...TRK}:{d:'#2f6a3a',g:'#5fae4a',h:'#f6b8d2',...TRK};return null;}
+  if(se===2){if(oakish)return t===1?{d:'#8a2a1a',g:'#d0452a',h:'#f0904a',...TRK}:{d:'#7a3318',g:'#c4601f',h:'#e8a23a',...TRK};if(pine)return {d:'#2a4a2a',g:'#4a7a3a',h:'#8aa850',...TRK};return null;}
+  if(se===3){if(oakish)return {d:'#5a4a3c',g:'#a89a88',h:'#f6f9fc',...TRK};if(pine)return {d:'#2a4a44',g:'#8fb8b0',h:'#f2f8ff',...TRK};return null;}
+  return null;
+}
+function treeSpr(t,fr){
+  const se=world?seasonNow():1;if(se===1)return SPR[t][fr];
+  if(!SPRS[se]){SPRS[se]=SPR.map((pair,ti)=>{const d=TREE_DEFS[ti],sp=d&&seasonTreePal(ti,se);return sp?[makeSprite(d[0],sp,0),makeSprite(d[0],sp,1)]:pair;});}
+  return SPRS[se][t][fr];
+}
 function makeSprite(rows,pal,frame){
   const w=rows[0].length,h=rows.length,c=document.createElement('canvas');
   c.width=w+2;c.height=h;const g=c.getContext('2d');
@@ -1106,6 +1141,7 @@ function draw(){
       if(k>dunMax()&&!(k===7&&DUN.fort))continue;
       const r=dunFloorRect(k);if(r.x>x1||r.x+r.w<x0||r.y>y1||r.y+r.h<y0)continue;
       g.drawImage(dunCanvas(k),r.x,r.y);
+      if(k===7)drawFortFx(g,r);
       for(const [tx,ty] of dunGen(k).torches){const x=r.x+tx*16,y=r.y+ty*16;if(x<x0-16||x>x1||y<y0-16||y>y1)continue;const f=((time*8+tx)|0)%3;
         g.fillStyle='#14101c';g.fillRect(x+6,y+7,4,6);g.fillStyle='#6b4423';g.fillRect(x+7,y+8,2,5);g.fillStyle='#ff6a1e';g.fillRect(x+6,y+3+(f===1?1:0),4,5);g.fillStyle='#ffb030';g.fillRect(x+7,y+2+(f===2?1:0),2,5);g.fillStyle='#ffe27a';g.fillRect(x+7,y+5,2,2);}
     }
@@ -1172,8 +1208,8 @@ function draw(){
     flush(y);
     const x=T.x[k]; if(x<x0-6||x>x1+6)continue;
     if(world.removed[k])continue;
-    const t=T.t[k]; if(t===4){const s=SPR[4][0];g.drawImage(s.c,x-(s.w>>1),y-s.h+1);continue;}
-    const fr=Math.sin(time*1.2+x*0.012+y*0.008)>0.35?1:0, s=SPR[t][fr];
+    const t=T.t[k]; if(t===4){const s=treeSpr(4,0);g.drawImage(s.c,x-(s.w>>1),y-s.h+1);continue;}
+    const fr=Math.sin(time*1.2+x*0.012+y*0.008)>0.35?1:0, s=treeSpr(t,fr);
     const ox=(P.chopping&&P.chopK===k)?((((time*16)|0)&1)?1:-1):0;
     g.drawImage(s.c,x-(s.w>>1)+ox,y-s.h+1);
   }
@@ -1183,6 +1219,7 @@ function draw(){
   drawCamp(g);
   if(mode==='play')drawPlayFx(g);
   if(!inD)drawVolcFx(g,x0,y0,x1,y1);
+  if(!inD)drawRuinMist(g,x0,y0,x1,y1);
   drawSkyReef(g,x0,y0,x1,y1);
 
   // 구름 그림자 + 구름
@@ -5018,7 +5055,7 @@ function walkable(x,y){
   if(hv<SEA-0.01&&!(rvv>0&&hv>SEA-0.03))return false;
   if((bioRaw(xi,yi)&128)&&!LAVA_WALK)return false;
   const c=world.camp; if(Math.abs(x-c.x)<4&&Math.abs(y-c.y)<3)return false;
-  {const sb=world.sgrid.get(Math.floor(y/GRID)*GW+Math.floor(x/GRID));if(sb&&STRUCT[sb.id].block&&!(sb.id==='door'&&sb.op)&&!(sb.id==='ruin'&&(sb.k==='field'||sb.k==='chick')))return false;}
+  {const sb=world.sgrid.get(Math.floor(y/GRID)*GW+Math.floor(x/GRID));if(sb&&STRUCT[sb.id].block&&!(sb.id==='door'&&sb.op)&&!(sb.id==='ruin'&&(sb.k==='field'||sb.k==='chick'||sb.k==='leaves')))return false;}
   const T=world.trees;
   for(let gy=(yi-4)>>4;gy<=(yi+4)>>4;gy++)for(let gx=(xi-4)>>4;gx<=(xi+4)>>4;gx++){
     const cell=tgrid.get(gy*tgw+gx); if(!cell)continue;
@@ -7790,7 +7827,69 @@ const LM_MINI_BIG=[   // 섬 곳곳의 중형 구조물: 벽·기둥·석상 안
 const LM_MINI=[0,1,2,3,4,5,6,7,8].map(b=>[LM_MINI_BIG[b%4],LM_MINI_BIG[(b+1)%4],LM_MINI_BIG[(b+2)%4]]);
 const LM_FOSSIL=["............","...q.q.q.q..",".zuuuuuuuuuu","...q.q.q.q..","............"];   // 거대한 고래 뼈 화석
 LM_MINI[2].push(LM_FOSSIL,LM_FOSSIL);LM_MINI[5].push(LM_FOSSIL);
-function drawRuin(g,b){
+function drawRuin(g,b){drawRuin0(g,b);drawRuinDeco(g,b);}
+const MURAL_N=6;
+function drawRuinDeco(g,b){
+  const cx=b.gx*GRID,cy=b.gy*GRID,bs=b.bs|0,pl=RUIN_PAL[bs]||RUIN_PAL[6],k=b.k,hv=(b.gx*7+b.gy*3)%7;
+  // 이끼와 덩굴 (폐허 섬)
+  if(b.rv&&(k==='wall'||k==='gcol'||k==='pillar'||k==='rhouse'||k==='statue'||k==='bstat'||k==='throne')){
+    const top=k==='gcol'?cy-8:k==='pillar'?cy-3:k==='wall'?cy+5:k==='rhouse'?cy+3:cy+2,len=k==='gcol'?18:k==='pillar'?13:7+(hv%4);
+    for(const dx of [2+hv%5,9+hv%4]){
+      g.fillStyle='#2f6a36';g.fillRect(cx+dx,top,1,len+((dx*3)%5));g.fillStyle='#4a9a48';
+      for(let y=top+2;y<top+len;y+=3)g.fillRect(cx+dx+((y>>1)&1?1:-1),y,2,1);
+    }
+    g.fillStyle='#5a8a3a';g.fillRect(cx+1+hv%6,top-1,5,2);
+  }
+  // 벽 그림: 이야기가 담긴 문양
+  if(k==='wall'&&b.gy%2===0&&(b.gx*5+b.gy*3)%4===0){
+    const m=((b.gx*3+b.gy)%MURAL_N+MURAL_N)%MURAL_N,x=cx+4,y=cy+8;
+    g.fillStyle='rgba(20,16,24,0.45)';g.fillRect(x-1,y-1,10,7);
+    g.fillStyle=pl.a;
+    if(m===0){g.fillRect(x+3,y+1,3,3);g.fillRect(x+4,y-1,1,1);g.fillRect(x+4,y+4,1,1);g.fillRect(x+1,y+2,1,1);g.fillRect(x+7,y+2,1,1);}      // 해
+    else if(m===1){for(let i=0;i<8;i+=2){g.fillRect(x+i,y+1+((i>>1)&1),2,1);g.fillRect(x+i,y+4-((i>>1)&1),2,1);}}                           // 물결
+    else if(m===2){g.fillRect(x+3,y+3,2,3);g.fillRect(x+1,y+1,6,2);g.fillRect(x+2,y,4,1);}                                                // 나무
+    else if(m===3){g.fillRect(x+3,y+3,3,2);g.fillRect(x+4,y+1,1,2);g.fillRect(x+2,y+2,1,2);g.fillRect(x+6,y+2,1,2);}                      // 불꽃
+    else if(m===4){g.fillRect(x+3,y,2,6);g.fillRect(x,y+2,8,2);}                                                                           // 별
+    else{g.fillRect(x+1,y+2,6,2);g.fillRect(x+3,y+1,2,4);g.fillStyle='#14161c';g.fillRect(x+4,y+2,1,2);}                                  // 눈
+  }
+  // 빛나는 룬: 기둥·거인상·제단
+  if(k==='gcol'||k==='titan'||k==='pillar'||k==='altar'){
+    const night=(typeof darknessAt==='function'&&world)?darknessAt(hourNow()):0,pu=0.4+0.6*(0.5+0.5*Math.sin(time*2+b.gx*1.3)),al=Math.min(1,0.45*pu+night*0.6);
+    if(k==='altar'){
+      g.fillStyle=pl.a;g.globalAlpha=al*0.9;
+      for(let i=0;i<14;i++){const a=i/14*6.2832+time*0.4;g.fillRect(Math.round(cx+8+Math.cos(a)*13),Math.round(cy+13+Math.sin(a)*5),2,1);}
+      g.fillRect(cx+1,cy+13,2,1);g.fillRect(cx+13,cy+13,2,1);g.globalAlpha=1;
+    }else if(!(k==='gcol'&&hv%4===0)){
+      const y=k==='gcol'?cy-12:k==='titan'?cy-3:cy+2,x=cx+6+(hv&1);
+      g.globalAlpha=al;g.fillStyle=pl.a;g.fillRect(x,y,1,4);g.fillRect(x+1,y+1,2,1);g.fillRect(x+2,y+3,1,2);g.fillRect(x-1,y+2,1,1);
+      g.globalAlpha=al*0.35;g.fillRect(x-2,y-1,6,7);g.globalAlpha=1;
+    }
+  }
+  // 계절: 지붕 위 눈, 가을 낙엽, 봄꽃
+  if(k==='house'||k==='inn'||k==='chapel'||k==='barn'){
+    const se=world?seasonNow():1,hs=(dx,dy)=>{const o=sgAt(b.gx+dx,b.gy+dy);return !!(o&&o.lm&&o.k===k);};
+    let rr=0;while(hs(0,-1-rr))rr++;
+    const RR=k==='house'?1:2;
+    if(rr<RR){
+      const L=hs(-1,0),Rr=hs(1,0);
+      if(se===3){g.fillStyle='#f4f8ff';g.fillRect(cx+(L?0:-1),cy+(rr?0:2),16+(L?0:1)+(Rr?0:1),rr?4:3);g.fillStyle='#c8d8ea';g.fillRect(cx,cy+(rr?4:5),16,1);if((b.gx+b.gy)%3===0){g.fillStyle='#f4f8ff';g.fillRect(cx+4,cy+(rr?5:6),5,1);}}
+      else if(se===2){g.fillStyle='#c4601f';g.fillRect(cx+((b.gx*5)%11)+1,cy+(rr?5:7),2,1);g.fillStyle='#e8a23a';g.fillRect(cx+((b.gx*3)%9)+4,cy+(rr?9:10),2,1);}
+      else if(se===0&&(b.gx+b.gy)%2===0){g.fillStyle='#f6b8d2';g.fillRect(cx+2+((b.gx*3)%9),cy+(rr?7:9),2,1);}
+    }
+  }
+}
+function drawRuinMist(g,x0,y0,x1,y1){   // 폐허 섬 위에 낮게 깔리는 안개
+  const R=world&&world.ruin;if(!R)return;
+  const cx=(R.vx?(R.cx+R.vx)/2:R.cx),cy=(R.vx?(R.cy+R.vy)/2:R.cy);
+  if(cx<x0-600||cx>x1+600||cy<y0-400||cy>y1+400)return;
+  for(let i=0;i<18;i++){
+    const a=i*2.399,rad=60+(i*53)%420,bx=cx+Math.cos(a)*rad*1.2+Math.sin(time*0.06+i)*40,by=cy+Math.sin(a)*rad*0.7+Math.cos(time*0.05+i*1.7)*14,w=80+(i*37)%90;
+    if(bx<x0-120||bx>x1+120||by<y0-40||by>y1+40)continue;
+    g.fillStyle='rgba(226,236,232,0.15)';g.beginPath();g.ellipse(bx,by,w,w*0.2,0,0,6.2832);g.fill();
+    g.fillStyle='rgba(226,236,232,0.1)';g.beginPath();g.ellipse(bx+20,by-6,w*0.7,w*0.14,0,0,6.2832);g.fill();
+  }
+}
+function drawRuin0(g,b){
   const cx=b.gx*GRID,cy=b.gy*GRID,bs=b.bs|0,pl=RUIN_PAL[bs]||RUIN_PAL[6],k=b.k;
   g.fillStyle='rgba(8,24,12,0.3)';g.fillRect(cx+1,cy+14,15,2);
   if(k==='pillar'){
@@ -7818,16 +7917,63 @@ function drawRuin(g,b){
     const f=((time*8+b.gx)|0)%3;
     g.fillStyle=pl.d;g.fillRect(cx+4,cy+9,8,3);g.fillRect(cx+5,cy+12,2,3);g.fillRect(cx+9,cy+12,2,3);g.fillStyle=pl.m;g.fillRect(cx+4,cy+9,8,1);
     g.fillStyle='#ff6a1e';g.fillRect(cx+6,cy+4+(f===1?1:0),4,5);g.fillStyle='#ffb030';g.fillRect(cx+7,cy+3+(f===2?1:0),2,5);g.fillStyle='#ffe27a';g.fillRect(cx+7,cy+6,2,2);
-  }else if(k==='vrock'){
-    const h=(b.gx*13+b.gy*7)%5;
-    g.fillStyle='#1c1418';g.fillRect(cx,cy,16,16);g.fillStyle=h<2?'#3a2c34':'#33262e';g.fillRect(cx+1,cy+1,14,14);
-    g.fillStyle='#4e3c46';g.fillRect(cx+1,cy+1,14,2);g.fillRect(cx+1,cy+1,2,14);g.fillStyle='#241a20';g.fillRect(cx+3,cy+9+(h&1),9,2);g.fillRect(cx+8,cy+3,2,6);
-    if(h===0||h===3){g.fillStyle='#ff6a1e';g.fillRect(cx+4,cy+5,1,3);g.fillRect(cx+5,cy+7,3,1);g.fillStyle='#ffd24a';g.fillRect(cx+5,cy+7,1,1);}
+  }else if(k==='vrock'||k==='lava'){   // 화산 바위·용암: 네모 테두리 없이 이웃과 이어지고 바깥쪽 가장자리만 울퉁불퉁
+    const nb=(dx,dy)=>{const o=sgAt(b.gx+dx,b.gy+dy);return !!(o&&o.lm&&(o.k==='vrock'||o.k==='lava'));};
+    const nT=nb(0,-1),nB=nb(0,1),nL=nb(-1,0),nR=nb(1,0),h=(b.gx*13+b.gy*7)%5;
+    if(k==='lava'){
+      const t=time*1.6+b.gx*0.7+b.gy*0.4,w=Math.sin(t)>0,hx=(b.gx*37+b.gy*101)%13;
+      g.fillStyle='#ff5a1e';g.fillRect(cx,cy,16,16);
+      g.fillStyle='#ff7a24';g.fillRect(cx+((hx*3)%9),cy+((hx*5)%11),6+(hx&3),2);g.fillRect(cx+((hx*7+4)%9),cy+((hx*3+7)%11)+2,5,2);
+      if(hx%3!==0){g.fillStyle='#ffb23a';g.fillRect(cx+(w?(hx%7)+1:(hx%7)+3),cy+(hx*2)%10+2,3+(hx&1),2);}
+      if(hx%5===0){g.fillStyle='#fff0a0';g.fillRect(cx+(w?5:8),cy+5+(hx&3),2,1);}
+    }else{
+      const ins=(i,sd)=>{const n=(i*5+b.gy*3+b.gx*7+sd*11)%5;return n===0?2:n<3?1:0;};
+      const lv=(dx,dy)=>{const o=sgAt(b.gx+dx,b.gy+dy);return !!(o&&o.lm&&o.k==='lava');};
+      for(let y=0;y<16;y++){
+        let x0=nL?0:ins(y,0),x1=16-(nR?0:ins(y,1));
+        if(!nT&&y<2){x0+=2-y;x1-=2-y;}
+        if(!nB&&y>13){x0+=y-13;x1-=y-13;}
+        if(x1<=x0)continue;
+        g.fillStyle=(!nT&&y<2)?'#4a3a43':(!nB&&y>13)?'#241a20':'#372b33';g.fillRect(cx+x0,cy+y,x1-x0,1);
+        if(!nL&&x1-x0>2){g.fillStyle='#4a3a43';g.fillRect(cx+x0,cy+y,1,1);}
+        if(!nR&&x1-x0>3){g.fillStyle='#241a20';g.fillRect(cx+x1-1,cy+y,1,1);}
+      }
+      const hs2=(b.gx*31+b.gy*17)%11;   // 겉면 얼룩: 칸마다 같은 무늬가 반복되지 않게
+      for(let q=0;q<5;q++){const px=(hs2*3+q*7)%14+1,py=(hs2*5+q*11)%14+1;g.fillStyle=q%2?'#2c2128':'#43343d';g.fillRect(cx+px,cy+py,2,1+(q&1));}
+      if(hs2===1){g.fillStyle='#241a20';g.fillRect(cx+3,cy+4,1,2);g.fillRect(cx+4,cy+6,1,2);g.fillRect(cx+5,cy+8,1,3);}
+      if(hs2===6){g.fillStyle='#ff6a1e';g.fillRect(cx+4,cy+5,1,3);g.fillRect(cx+5,cy+7,3,1);g.fillStyle='#ffd24a';g.fillRect(cx+5,cy+7,1,1);}
+      // 용암과 닿는 쪽은 달아오른 가장자리
+      for(const [dx,dy] of [[0,-1],[0,1],[-1,0],[1,0]]){
+        if(!lv(dx,dy))continue;
+        g.fillStyle='#8a2a14';
+        for(let i=0;i<16;i++){const j2=ins(i,dx+dy*3+5)+1;
+          if(dy)g.fillRect(cx+i,dy<0?cy:cy+16-j2,1,j2);else g.fillRect(dx<0?cx:cx+16-j2,cy+i,j2,1);}
+        g.fillStyle='#ff6a1e';
+        for(let i=0;i<16;i+=2){const j2=ins(i,dx+dy*3+5);
+          if(dy)g.fillRect(cx+i,dy<0?cy:cy+15,2,1);else g.fillRect(dx<0?cx:cx+15,cy+i,1,2);}
+      }
+    }
   }else if(k==='cave'){
     g.fillStyle='#14161c';g.fillRect(cx-2,cy-10,20,27);g.fillStyle=pl.m;g.fillRect(cx-1,cy-9,18,25);g.fillStyle=pl.l;g.fillRect(cx-1,cy-9,18,2);g.fillRect(cx-1,cy-9,2,25);
     g.fillStyle='#07050c';g.fillRect(cx+2,cy-3,12,19);g.fillRect(cx+3,cy-5,10,2);g.fillRect(cx+5,cy-6,6,1);
     g.fillStyle='#2a2438';for(let i=0;i<3;i++)g.fillRect(cx+3+i,cy+11+i*2,10-i*2,2);
     const f=Math.sin(time*5)>0?1:0;g.fillStyle='rgba(255,150,50,0.5)';g.fillRect(cx+1,cy-1,1,3+f);g.fillRect(cx+14,cy-1,1,3+f);g.fillStyle='#ffb030';g.fillRect(cx+1,cy-2,1,1);g.fillRect(cx+14,cy-2,1,1);
+  }else if(k==='rflag'){
+    const w=Math.sin(time*2.6+b.gx)>0?1:0;
+    g.fillStyle='#3d2412';g.fillRect(cx+7,cy-12,2,27);g.fillStyle='#14161c';g.fillRect(cx+9,cy-12,8,10+w);g.fillStyle='#7a2a36';g.fillRect(cx+9,cy-11,7,8+w);
+    g.fillStyle='#14161c';g.fillRect(cx+9,cy-4+w,2,3);g.fillRect(cx+13,cy-3+w,2,4);g.fillStyle='#e8c860';g.fillRect(cx+11,cy-9,3,2);g.fillStyle='#5a7a3a';g.fillRect(cx+7,cy-2,1,6);g.fillRect(cx+8,cy+3,1,3);
+  }else if(k==='fcol'){
+    g.fillStyle=pl.d;g.fillRect(cx-2,cy+7,20,8);g.fillStyle=pl.m;g.fillRect(cx-1,cy+8,18,6);g.fillStyle=pl.l;g.fillRect(cx-1,cy+8,18,2);
+    g.fillStyle=pl.d;g.fillRect(cx+4,cy+8,1,6);g.fillRect(cx+11,cy+8,1,6);g.fillStyle=pl.d;g.fillRect(cx-3,cy+6,3,10);g.fillStyle=pl.l;g.fillRect(cx-3,cy+6,3,2);
+    g.fillStyle='#5a7a3a';g.fillRect(cx+6,cy+7,5,2);g.fillRect(cx+1,cy+13,3,1);
+  }else if(k==='bstat'){
+    g.fillStyle=pl.d;g.fillRect(cx+3,cy+11,10,4);g.fillStyle=pl.m;g.fillRect(cx+4,cy+11,8,3);
+    g.fillStyle=pl.d;g.fillRect(cx+5,cy+4,6,8);g.fillStyle=pl.l;g.fillRect(cx+6,cy+4,4,7);g.fillStyle=pl.m;g.fillRect(cx+3,cy+6,3,2);
+    g.fillStyle=pl.d;g.fillRect(cx+4,cy+3,3,2);g.fillStyle=pl.m;g.fillRect(cx+10,cy+11,5,3);g.fillStyle=pl.l;g.fillRect(cx+11,cy+11,3,1);   // 부러진 팔이 발치에
+    g.fillStyle='#5a7a3a';g.fillRect(cx+5,cy+8,2,3);g.fillRect(cx+9,cy+5,1,4);
+  }else if(k==='leaves'){
+    const hv=(b.gx*7+b.gy*5)%4,cols=['#c4601f','#e8a23a','#a8421a','#d9b040'];
+    for(let q=0;q<6;q++){g.fillStyle=cols[(q+hv)%4];g.fillRect(cx+((q*5+hv*3)%13)+1,cy+((q*7+hv)%12)+2,2+(q&1),1+(q%2));}
   }else if(k==='lamp'){
     const on=(typeof hourNow==='function')&&darknessAt(hourNow())>0.05;
     g.fillStyle='#14161c';g.fillRect(cx+7,cy-10,2,24);g.fillStyle='#3a3d4a';g.fillRect(cx+7,cy-10,1,24);g.fillRect(cx+5,cy+12,6,3);
@@ -8078,6 +8224,7 @@ function lmClear(ox,oy,lw,lh){   // 자리에 있던 나무와 바위는 치워�
     const bc=bgrid.get(gy*tgw+gx);if(bc)for(const k of bc){if(!world.brem[k]&&Bd.x[k]>=x0&&Bd.x[k]<=x1&&Bd.y[k]>=y0&&Bd.y[k]<=y1)world.brem[k]=1;}
   }
 }
+let LM_RV=false;
 function lmPlace(lay,ox,oy,bs){
   let altar=null,lmcN=0;
   lay.forEach((row,y)=>{for(let x=0;x<row.length;x++){
@@ -8087,8 +8234,8 @@ function lmPlace(lay,ox,oy,bs){
     if(ch==='e'){(world.ruinc=world.ruinc||[]).push([gx,gy]);continue;}   // 옛 궁전 보물 상자
     if(ch==='D'){if(x===15&&y===7)(world.pirc=world.pirc||[]).push([gx,gy]);continue;}
     if(ch>='1'&&ch<='6'){(world.vnpcRaw=world.vnpcRaw||[]).push({n:+ch-1,gx,gy});continue;}
-    const kind={P:'pillar',W:'wall',S:'statue',B:'brazier',V:'vrock',L:'lava',H:'house',T:'stall',Y:'palis',X:'tent',K:'flag',Q:'lamp',F:'flowers',R:'laundry',O:'well',N:'cave',J:'chapel',j:'inn',U:'barn',M:'field',E:'fence',G:'hay',I:'mill',a:'cow',b:'chick',q:'rib',u:'spine',z:'skull',g:'gcol',t:'titan',m:'lighthouse',c:'crate',d:'barrel',h:'rhouse',r:'rubble',Z:'throne'}[ch];if(!kind)continue;
-    const b=addStructCell('ruin',gx,gy,null);if(b){b.lm=1;b.k=kind;b.bs=bs;}
+    const kind={P:'pillar',W:'wall',S:'statue',B:'brazier',V:'vrock',L:'lava',H:'house',T:'stall',Y:'palis',X:'tent',K:'flag',Q:'lamp',F:'flowers',R:'laundry',O:'well',N:'cave',J:'chapel',j:'inn',U:'barn',M:'field',E:'fence',G:'hay',I:'mill',a:'cow',b:'chick',q:'rib',u:'spine',z:'skull',g:'gcol',t:'titan',m:'lighthouse',c:'crate',d:'barrel',h:'rhouse',r:'rubble',Z:'throne',f:'rflag',n:'fcol',o:'bstat',l:'leaves'}[ch];if(!kind)continue;
+    const b=addStructCell('ruin',gx,gy,null);if(b){b.lm=1;b.k=kind;b.bs=bs;if(LM_RV)b.rv=1;}
   }});
   return altar;
 }
@@ -8260,6 +8407,10 @@ function ruinPalaceLayout(){   // 옛 궁전: 무너진 성벽 · 정문 · 기�
   for(const [x,y] of [[6,10],[24,12],[10,13],[20,16],[15,12],[13,17],[17,15],[3,13],[27,16],[7,18],[23,9],[15,10]])put(x,y,'r');
   for(const [x,y] of [[14,10],[16,10],[6,15],[24,15]])put(x,y,'B');
   put(15,14,'O');
+  for(const [x,y] of [[11,18],[19,18],[11,4],[19,4]])put(x,y,'f');   // 해진 깃발
+  for(const [x,y] of [[8,14],[21,13],[15,17],[5,12]])put(x,y,'n');     // 쓰러진 기둥
+  for(const [x,y] of [[9,16],[22,17],[10,2]])put(x,y,'o');             // 부러진 동상
+  for(let i=0;i<22;i++){const x=1+(i*13+3)%29,y=9+(i*7)%11;if(r[y][x]==='.')put(x,y,'l');}   // 낙엽 더미
   return r.map(a=>a.join(''));
 }
 function ruinVillageLayout(){   // 폐허가 된 마을: 지붕 없이 허물어진 집들 · 우물 · 잡초
@@ -8267,7 +8418,8 @@ function ruinVillageLayout(){   // 폐허가 된 마을: 지붕 없이 허물어
   const put=(x,y,c)=>{if(x>=0&&y>=0&&x<Wd&&y<Ht)r[y][x]=c;};
   const house=(x,y,w)=>{for(let j=0;j<2;j++)for(let i=0;i<(w||4);i++)if(!((x*3+y*7+i*5+j)%11===0))put(x+i,y+j,'h');};
   [[1,1,4],[8,1,3],[14,1,4],[21,1,3],[27,2,4],[2,10,4],[9,11,3],[24,10,4],[29,12,3]].forEach(a=>house(...a));
-  put(16,8,'O');put(15,8,'r');put(17,9,'r');put(14,9,'S');
+  put(16,8,'O');put(15,8,'r');put(17,9,'r');put(14,9,'S');put(16,4,'f');put(5,8,'o');put(25,8,'n');put(12,8,'n');
+  for(let i=0;i<20;i++){const x=1+(i*11+2)%31,y=(i*5)%16;if(r[y][x]==='.')put(x,y,'l');}
   for(const [x,y] of [[6,5],[12,5],[19,5],[25,6],[7,8],[22,8],[12,13],[19,13],[5,14],[27,9],[31,8],[1,6],[17,5],[28,15]])put(x,y,'r');
   for(const [x,y] of [[4,7],[10,8],[18,12],[26,13],[30,5],[13,10]])put(x,y,'F');
   for(const [x,y] of [[8,6],[21,6],[14,12]])put(x,y,'Q');
@@ -8289,8 +8441,9 @@ function buildRuinIsle(){   // 폐허 섬: 큰 섬 하나에 옛 궁전과 폐�
     const pcx=(ps.ox+pl[0].length/2)*GRID,pcy=(ps.oy+pl.length/2)*GRID;
     const vs=villageSite(o,vl[0].length,vl.length,(ox,oy,w,h)=>taken(ox,oy,w,h)||Math.hypot((ox+w/2)*GRID-pcx,(oy+h/2)*GRID-pcy)<(pl[0].length/2+w/2+3)*GRID);
     if(!vs)continue;   // 궁전과 마을이 모두 들어가는 섬만 골라요
-    lmClear(ps.ox,ps.oy,pl[0].length,pl.length);lmPlace(pl,ps.ox,ps.oy,o.b);
-    lmClear(vs.ox,vs.oy,vl[0].length,vl.length);lmPlace(vl,vs.ox,vs.oy,o.b);
+    LM_RV=true;
+    try{lmClear(ps.ox,ps.oy,pl[0].length,pl.length);lmPlace(pl,ps.ox,ps.oy,o.b);
+    lmClear(vs.ox,vs.oy,vl[0].length,vl.length);lmPlace(vl,vs.ox,vs.oy,o.b);}finally{LM_RV=false;}
     const vcx=(vs.ox+vl[0].length/2)*GRID,vcy=(vs.oy+vl.length/2)*GRID;
     o.vname='폐허섬';
     world.ruin={isl:i,cx:pcx,cy:pcy,vx:vcx,vy:vcy};
@@ -8323,7 +8476,7 @@ function buildLandmarks0(){
     const o=world.islands[i],fx=rnd()<0.5,fy=rnd()<0.5;
     if(i===world.vill||i===world.pir){world.lm[i]=null;continue;}   // 마을섬에는 유적 대신 마을이 있어요
     if(o.b===3&&i>0){   // 화산섬: 한가운데에 진짜 화산 (분화구에 용암)
-      const vl=[];for(let y=0;y<13;y++){let row='';for(let x=0;x<19;x++){const d=((x-9)/9.5)**2+((y-6)/6.5)**2;row+=d<=0.13?'L':d<=1?'V':'.';}vl.push(row);}
+      const vl=[];for(let y=0;y<13;y++){let row='';for(let x=0;x<19;x++){const d=((x-9)/9.5)**2+((y-6)/6.5)**2+(((x*7+y*13)%5)-2)*0.03;row+=d<=0.2?'L':d<=1?'V':'.';}vl.push(row);}
       const vs=lmFind([(o.cx/GRID)|0,(o.cy/GRID)|0],19,13,80,null);
       if(vs){lmClear(vs.ox,vs.oy,19,13);lmPlace(vl,vs.ox,vs.oy,o.b);world.volc.push({x:(vs.ox+9.5)*GRID,y:(vs.oy+6.5)*GRID});}
     }
@@ -9795,7 +9948,22 @@ function fortSky(g,c){   // 구름 바다
     g.fillStyle='rgba(255,255,255,0.18)';g.fillRect(x+4,y+h,w-8,4);
   }
 }
-function fortTheme(g,c,G,N){   // 파란 융단 · 금빛 문장
+function fortTheme(g,c,G,N){   // 파란 융단 · 금빛 문장 · 스테인드글라스 · 깃발
+  const at=(x,y)=>x<0||y<0||x>=N||y>=N?0:G.g[y*N+x];
+  const GL=['#e0434f','#4a8ae0','#f2c75a','#6ac05a','#c060e0'];
+  for(let y=0;y<N-1;y++)for(let x=1;x<N-1;x++){
+    if(at(x,y)||!at(x,y+1))continue;
+    const px=x*16,py=y*16,h=(x*5+y*3)%6;
+    if(h===0){   // 아치 창: 색유리
+      g.fillStyle='#6a6350';g.fillRect(px+3,py+1,10,14);g.fillStyle='#14161c';g.fillRect(px+4,py+2,8,13);
+      for(let i=0;i<3;i++){g.fillStyle=GL[(x+y+i)%5];g.fillRect(px+5,py+3+i*4,6,3);}
+      g.fillStyle='#14161c';g.fillRect(px+7,py+2,2,13);g.fillStyle='rgba(255,255,255,0.45)';g.fillRect(px+5,py+3,2,1);
+      g.fillStyle='#f2c75a';g.fillRect(px+4,py+1,8,1);
+    }else if(h===3){   // 금빛 문장 깃발
+      g.fillStyle='#f2c75a';g.fillRect(px+4,py+1,8,1);g.fillStyle='#2f4f9a';g.fillRect(px+5,py+2,6,12);g.fillRect(px+7,py+14,2,1);g.fillStyle='#4a6ec0';g.fillRect(px+5,py+2,2,11);
+      g.fillStyle='#f2c75a';g.fillRect(px+7,py+5,2,5);g.fillRect(px+6,py+7,4,1);
+    }
+  }
   for(let y=0;y<N;y++)for(let x=18;x<=21;x++){
     if(G.g[y*N+x]!==1||y>34)continue;
     const px=x*16,py=y*16;
@@ -9873,6 +10041,19 @@ function dunCanvas(k){
   }
   if(k===6)reefTheme(g,c,G,N);if(S)fortTheme(g,c,G,N);
   DUNCV.set(k,c);return c;
+}
+function drawFortFx(g,r){   // 하늘 요새 안: 창으로 들어오는 빛줄기 · 기둥 위에 떠 있는 크리스털
+  for(let i=0;i<6;i++){
+    const bx=r.x+50+i*105+Math.sin(time*0.25+i*1.3)*10,a=0.05+0.04*Math.sin(time*0.6+i);
+    g.fillStyle=`rgba(255,244,190,${a.toFixed(3)})`;
+    g.beginPath();g.moveTo(bx,r.y);g.lineTo(bx+26,r.y);g.lineTo(bx+26+140,r.y+DUN_PX);g.lineTo(bx+140,r.y+DUN_PX);g.closePath();g.fill();
+  }
+  for(const [cx,cy] of [[14,4],[25,4],[14,10],[25,10],[10,22],[15,22],[24,22],[29,22]]){
+    const x=r.x+cx*16+8,y=r.y+cy*16-4+Math.round(Math.sin(time*1.6+cx)*2),pu=0.5+0.5*Math.sin(time*2.4+cy);
+    g.fillStyle=`rgba(122,208,255,${(0.12+0.12*pu).toFixed(2)})`;g.beginPath();g.arc(x,y,12,0,6.2832);g.fill();
+    g.fillStyle='#14161c';g.fillRect(x-3,y-7,6,14);g.fillStyle='#2a7aa8';g.fillRect(x-2,y-6,4,12);g.fillStyle='#7ad0ff';g.fillRect(x-2,y-6,2,10);g.fillStyle='#e8fbff';g.fillRect(x-1,y-5,1,3);
+    g.fillStyle='#14161c';g.fillRect(x-1,y-9,2,2);g.fillRect(x-1,y+7,2,2);
+  }
 }
 function dunWalk(k,x,y){
   const G=dunGen(k),r=dunFloorRect(k);
@@ -10126,7 +10307,7 @@ function drawWaterFx(g,x0,y0,x1,y1){
     }
   }
 }
-const CAST_H={rhouse:12,rubble:4,throne:20,gcol:34,titan:44,lighthouse:50,crate:6,barrel:7,rib:12,spine:3,skull:9,cave:16,pillar:20,wall:8,statue:14,brazier:5,vrock:8,house:18,stall:9,tent:9,flag:24,palis:10,lamp:22,flowers:3,laundry:12,well:10,altar:6,chapel:22,inn:18,barn:20,fence:5,hay:7,mill:28,cow:8};
+const CAST_H={rflag:22,fcol:6,bstat:12,rhouse:12,rubble:4,throne:20,gcol:34,titan:44,lighthouse:50,crate:6,barrel:7,rib:12,spine:3,skull:9,cave:16,pillar:20,wall:8,statue:14,brazier:5,vrock:8,house:18,stall:9,tent:9,flag:24,palis:10,lamp:22,flowers:3,laundry:12,well:10,altar:6,chapel:22,inn:18,barn:20,fence:5,hay:7,mill:28,cow:8};
 function drawCastShadows(g,tvis,list){
   if(!world||(DUN&&dunFloorAt(P.x,P.y)))return;
   const h=hourNow(),f=Math.min(1,(h-6)/1.3,(18.3-h)/1.3);if(!(f>0))return;
@@ -10311,7 +10492,7 @@ function drawNight(g,a,ix,iy){
   d.globalCompositeOperation='destination-out';d.fillStyle='rgba(0,0,0,0.3)';
   const light=(x,y,r)=>{for(let k=0;k<4;k++)fillCircle(d,Math.round(x-ix),Math.round(y-iy),Math.round(r*(1-k*0.22)));};
   light(world.camp.x,world.camp.y-1,50+(((time*9)|0)%3===1?1:0));
-  for(const b of world.structs)if((b.id==='oven'||b.id==='furnace'||b.id==='torch'||(b.id==='ruin'&&(b.k==='brazier'||b.k==='lamp'||b.k==='flag')))&&Math.abs(b.x-P.x)<400&&Math.abs(b.y-P.y)<300){if(b.id==='ruin'&&b.k==='flag')continue;light(b.x,b.y-(b.id==='torch'||b.id==='ruin'?8:6),b.k==='lamp'?32:b.id==='torch'||b.id==='ruin'?24:28);}
+  for(const b of world.structs)if((b.id==='oven'||b.id==='furnace'||b.id==='torch'||(b.id==='ruin'&&(b.k==='brazier'||b.k==='lamp'||b.k==='flag'||b.k==='lava')))&&Math.abs(b.x-P.x)<400&&Math.abs(b.y-P.y)<300){if(b.id==='ruin'&&b.k==='flag')continue;light(b.x,b.y-(b.id==='torch'||b.id==='ruin'?8:6),b.k==='lamp'?32:b.k==='lava'?18:b.id==='torch'||b.id==='ruin'?24:28);}
   for(const b of world.structs)if(b.id==='ruin'&&b.k==='lighthouse'&&Math.abs(b.x-P.x)<700&&Math.abs(b.y-P.y)<520){
     const bx=Math.round(b.x-ix),by=Math.round(b.y-iy-48);light(b.x,b.y-48,40);
     d.fillStyle='rgba(0,0,0,0.42)';
